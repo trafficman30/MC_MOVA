@@ -245,13 +245,42 @@ python tests/test_ipc.py
 kill %1
 ```
 
-### Phase 2 — Kernel entry point
-`kernel_main.py` — attach real `MovaStream` + `IPCServer` + MOVA Tools.
-Bring in `core/`, `stream.py`, `dataset/`, `streams/`, `licence/`, `protocol/`, `log/`
-from `/opt/MOVA/pci_mova/`.
-Replace stub tick loop in `kernel_main.py` with real `MovaStream._loop()`.
-Wire tick events to `ipc.publish_event()` calls.
-Verify tick isolation — no HTTP, no asyncio in this process.
+### Phase 2 — Kernel entry point ✅ COMPLETE (2026-05-31)
+
+`kernel_main.py` — real `MovaStream` + `IPCServer` + MOVA Tools, fully working.
+
+**What was brought in:**
+- All kernel modules from `/opt/MOVA/pci_mova/`: `core/`, `stream.py`, `dataset/`, `streams/`, `licence/`, `protocol/`, `log/`
+- `libmova.so` (C kernel binary) + rebuilt with `MI_gs_check()` (see below)
+- `pci_mova/dataset/parser.py` extended with public `validate_sc_rules()` function
+
+**Verified working:**
+- Licence check on startup; clean exit if stream N not licensed
+- Dataset load via LOAD IPC command — kernel initialises, tick loop starts
+- CRB + MOVA_ON enable via SET_CRB / SET_IO IPC commands
+- ON_CONTROL=1, EC=0 achieved within 2 seconds
+- Kernel stage cycling active (force bits set, messages flowing via IPC)
+- MOVA Tools TCP server on port `6000+N` (asyncio in its own thread)
+- Dataset state persistence — saved on LOAD/UNLOAD/SET_IO(27); restored on restart
+- SIGTERM clean shutdown
+- IPC events published: `phase_change`, `on_control`, `mova_on`, `ec_change`, `status_change`
+
+**SimulatedIO warmup bypass — design note:**
+
+In the embedded RTOS, the TLC cycles stages independently and MOVA observes confirms
+to count warmup stage visits. In simulation (SimulatedIO, no real TLC), this can't
+happen because `genstg.c:handle_consistent_crbs()` explicitly skips force bits when
+`ON_CONTROL=0`, so auto_follow has nothing to respond to.
+
+Fix: `MI_gs_check()` added to `M8.0/mova_api.c`. Called from `kernel_main.py` when
+CRB and MOVA_ON are both set in SimulatedIO mode. It pre-sets `Tcomshr->snow` and
+`p_junction->current_stage` to 1 (the reversionary stage), then calls
+`GS_check_and_update_io_flags()` directly — bypassing `warmup_check()`'s
+PM-transition gate. This is the same outcome as `handle_error_count()` on fault
+recovery, but triggered immediately at startup rather than after an error cycle.
+
+In production (XKOP or CM5 IOBus), this bypass is NOT triggered — real TLC confirms
+drive warmup naturally.
 
 ### Phase 3 — Web entry point
 `web_main.py` — create `KernelRegistry`, mount FastAPI routes, start uvicorn.
@@ -584,26 +613,27 @@ Do NOT mix venvs.
 ## Outstanding work
 
 ### Phase 1 — IPC layer ✅ COMPLETE
-`pci_mova/ipc/server.py` + `client.py` implemented and testable.
+### Phase 2 — Kernel entry point ✅ COMPLETE (2026-05-31)
 
-### Phase 2 — Kernel entry point
-Bring in proven code from `/opt/MOVA/pci_mova/`: core/, stream.py, dataset/,
-streams/, licence/, protocol/, log/. Attach to `kernel_main.py` stub.
-Wire `ipc.publish_event()` for phase changes, ON_CONTROL, MOVA_ON transitions.
+See Phase 2 section in Implementation phases for full detail.
 
-### Phase 3 — Web entry point
+### Phase 3 — NEXT: CM5 IOBus IO (skip SimulatedIO)
+**Decision:** Skip SimulatedIO wiring entirely. Connect directly to CM5 IOBus.
+- Implement `cm5_io.py` Unix socket client: BATCH read detectors/confirms/CRB, W write forces
+- Apply 150ms rising-edge latch per detector
+- Kernel processes connect to CM5 IOBus automatically if socket present
+- SimulatedIO remains available as fallback when CM5 not present
+
+### Phase 4 — Web entry point
 Bring in `api/` + `web/static/` from `/opt/MOVA/pci_mova/`.
 Update route handlers → `KernelClient.send_command()`.
 Update WebSocket handlers → `KernelClient` push stream.
 
-### Phase 4 — Route + WS handlers
+### Phase 5 — Route + WS handlers
 One-for-one proxy of all existing endpoints through IPC.
 
-### Phase 5 — Systemd + migration
+### Phase 6 — Systemd + migration
 New unit files, disable `pci-mova.service` on legacy `/opt/MOVA`.
-
-### Phase 6 — CM5 IOBus IO
-`cm5_io.py` socket client with 150ms detector latch.
 
 ### Phase 7 — CM5 service split
 UG405, RTIG, AutoDim, etc. as standalone processes under `services/`.

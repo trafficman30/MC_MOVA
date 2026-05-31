@@ -4,14 +4,19 @@ Kernel process entry point — one process per stream.
 Usage:
     python -m pci_mova.kernel_main <stream_index>
 
-Main thread owns the tick loop (SIGTERM lands here for clean shutdown).
-IPC server runs on background threads.
-MOVA Tools TCP server runs on a background thread.
+Threading model:
+    main thread       — event loop: IPC snapshot publishing, SIGTERM handling
+    stream tick thread — MovaStream._loop() 10Hz (daemon, started by load_dataset)
+    ipc-push thread   — IPCServer push socket (daemon)
+    ipc-cmd thread    — IPCServer command socket (daemon)
+    mova-tools thread — asyncio event loop for AML/TCP server (daemon)
 
-Current state: Phase 1 stub — IPC sockets work, no kernel attached.
+SIGTERM fires on the main thread → stop_event set → clean shutdown.
 """
 
+import asyncio
 import logging
+import os
 import signal
 import sys
 import threading
@@ -19,6 +24,314 @@ import time
 
 log = logging.getLogger(__name__)
 
+
+# ── MOVA Tools server — asyncio in its own thread ──────────────────────────
+
+def _start_mova_tools(stream) -> threading.Thread:
+    """Run the MOVA Tools async server on a private event loop in a background thread."""
+    from pci_mova.protocol.mova_tools import MovaToolsServer
+
+    def _run():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        server = MovaToolsServer(stream)
+        try:
+            loop.run_until_complete(server.start())
+            loop.run_forever()
+        finally:
+            loop.run_until_complete(server.stop())
+            loop.close()
+
+    t = threading.Thread(target=_run, daemon=True, name=f"mova-tools-{stream.stream_id}")
+    t.start()
+    return t
+
+
+# ── Dataset state persistence (single-stream variant) ──────────────────────
+
+def _state_path(stream_index: int) -> str:
+    from pci_mova.config import DATASET_DIR
+    return os.path.join(DATASET_DIR, f".stream_state_{stream_index}.json")
+
+
+def _save_state(stream, stream_index: int) -> None:
+    import json
+    from pci_mova.config import DATASET_DIR
+    ds = stream._dataset
+    if ds is None or not ds.source_path or not os.path.isfile(ds.source_path):
+        return
+    state = {
+        "filename":  os.path.basename(ds.source_path),
+        "stream_id": ds.header.stream_id_str,
+        "mova_on":   int(stream.buffers.io[27]),
+    }
+    try:
+        import json as _json
+        with open(_state_path(stream_index), "w") as fh:
+            _json.dump(state, fh, indent=2)
+        log.debug("Stream %d: state saved", stream_index)
+    except OSError as exc:
+        log.warning("Stream %d: could not save state: %s", stream_index, exc)
+
+
+def _restore_state(stream, stream_index: int) -> None:
+    import json as _json
+    path = _state_path(stream_index)
+    if not os.path.isfile(path):
+        return
+    try:
+        with open(path) as fh:
+            state = _json.load(fh)
+    except Exception as exc:
+        log.warning("Stream %d: could not read state: %s", stream_index, exc)
+        return
+
+    from pci_mova.config import DATASET_DIR
+    from pci_mova.dataset.parser import load_all
+    filename = state.get("filename", "")
+    ctrl_id  = state.get("stream_id", "")
+    mova_on  = state.get("mova_on", 0)
+
+    ds_path = os.path.join(DATASET_DIR, filename)
+    if not os.path.isfile(ds_path):
+        log.warning("Stream %d: saved dataset '%s' not found — skipping restore",
+                    stream_index, filename)
+        return
+    try:
+        all_streams = load_all(ds_path)
+    except Exception as exc:
+        log.error("Stream %d: dataset parse failed: %s", stream_index, exc)
+        return
+    if ctrl_id not in all_streams:
+        log.warning("Stream %d: controller stream '%s' not in '%s' — skipping restore",
+                    stream_index, ctrl_id, filename)
+        return
+    ok = stream.load_dataset(all_streams[ctrl_id])
+    if ok:
+        from pci_mova.core.io.simulated import SimulatedIO as _Sim
+        if isinstance(stream.io, _Sim):
+            stream.io.auto_follow = True
+        log.info("Stream %d: restored dataset '%s' (%s)", stream_index, filename, ctrl_id)
+        if mova_on:
+            stream.buffers.io[27] = 1
+            log.info("Stream %d: MOVA_ON restored", stream_index)
+            if isinstance(stream.io, _Sim) and stream._dataset is not None:
+                stream.kernel.set_io_flag(27, 1)
+                stream.kernel.set_crb_in_kernel(True)
+                stream.kernel.set_demanded_stage(1)
+                stream.kernel.gs_check()
+                log.debug("Stream %d: SimulatedIO GS_check bypass triggered", stream_index)
+    else:
+        log.warning("Stream %d: kernel rejected restored dataset '%s'", stream_index, filename)
+
+
+# ── IPC command handler ─────────────────────────────────────────────────────
+
+def _make_cmd_handler(stream, stream_index: int, ipc, save_state_fn):
+    """
+    Returns a function(cmd, args) -> dict for the IPC command socket.
+    Called from the IPC cmd thread — uses GIL-safe operations only.
+    """
+    from pci_mova.config import DATASET_DIR
+    from pci_mova.core.io.simulated import SimulatedIO
+    from pci_mova.core.io.xkop_io import XKOPio
+
+    def handler(cmd: str, args: list) -> dict:
+        try:
+            if cmd == "LOAD":
+                if len(args) < 2:
+                    return {"t": "ack", "cmd": cmd, "ok": False, "err": "LOAD requires <path> <stream_id>"}
+                ds_path, ctrl_id = args[0], args[1]
+                from pci_mova.dataset.parser import load_all, DatasetError, validate_sc_rules
+                try:
+                    validate_sc_rules(ds_path)
+                    all_streams = load_all(ds_path)
+                except DatasetError as exc:
+                    return {"t": "ack", "cmd": cmd, "ok": False, "err": str(exc)}
+                if ctrl_id not in all_streams:
+                    return {"t": "ack", "cmd": cmd, "ok": False,
+                            "err": f"Controller stream '{ctrl_id}' not found in dataset"}
+                if stream._thread and stream._thread.is_alive():
+                    stream.stop()
+                    time.sleep(0.15)
+                ok = stream.load_dataset(all_streams[ctrl_id])
+                if ok:
+                    # Auto-enable follow in simulation mode (no hardware)
+                    if isinstance(stream.io, SimulatedIO):
+                        stream.io.auto_follow = True
+                    save_state_fn()
+                    ipc.publish_event("dataset_loaded", path=ds_path, ctrl_id=ctrl_id)
+                return {"t": "ack", "cmd": cmd, "ok": ok,
+                        "err": "" if ok else "kernel rejected dataset"}
+
+            elif cmd == "UNLOAD":
+                stream.stop()
+                stream._dataset = None
+                save_state_fn()
+                ipc.publish_event("dataset_unloaded")
+                return {"t": "ack", "cmd": cmd, "ok": True}
+
+            elif cmd == "SET_IO":
+                if len(args) < 2:
+                    return {"t": "ack", "cmd": cmd, "ok": False, "err": "SET_IO requires <index> <value>"}
+                idx, val = int(args[0]), int(args[1])
+                if idx == 19:  # ON_CONTROL — kernel-owned
+                    return {"t": "ack", "cmd": cmd, "ok": False,
+                            "err": "ON_CONTROL is kernel-owned"}
+                if idx == 27 and val == 0:  # MOVA_ON off → reset warmup
+                    stream.kernel.set_warmup_counter(-1)
+                stream.buffers.io[idx] = val
+                # MOVA_ON=1 with CRB=True in SimulatedIO → bypass warmup (same as SET_CRB path)
+                if idx == 27 and val == 1 and isinstance(stream.io, SimulatedIO) and stream._dataset is not None:
+                    if stream.buffers.crb:
+                        stream.kernel.set_io_flag(27, 1)
+                        stream.kernel.set_crb_in_kernel(True)
+                        stream.kernel.set_demanded_stage(1)
+                        stream.kernel.gs_check()
+                        log.debug("Stream %d: SimulatedIO GS_check bypass triggered", stream_index)
+                save_state_fn()
+                ipc.publish_event("io_set", index=idx, value=val)
+                return {"t": "ack", "cmd": cmd, "ok": True}
+
+            elif cmd == "SET_DET":
+                if len(args) < 2:
+                    return {"t": "ack", "cmd": cmd, "ok": False, "err": "SET_DET requires <index> <value>"}
+                idx, val = int(args[0]), int(args[1])
+                if hasattr(stream.io, 'set_detector'):
+                    stream.io.set_detector(idx, val)
+                else:
+                    stream.buffers.din[idx] = val
+                return {"t": "ack", "cmd": cmd, "ok": True}
+
+            elif cmd == "SET_CONFIRM":
+                if len(args) < 2:
+                    return {"t": "ack", "cmd": cmd, "ok": False, "err": "SET_CONFIRM requires <index> <value>"}
+                idx, val = int(args[0]), int(args[1])
+                if hasattr(stream.io, 'set_confirm'):
+                    stream.io.set_confirm(idx, val)
+                else:
+                    stream.buffers.confin[idx] = val
+                return {"t": "ack", "cmd": cmd, "ok": True}
+
+            elif cmd == "SET_CRB":
+                if len(args) < 1:
+                    return {"t": "ack", "cmd": cmd, "ok": False, "err": "SET_CRB requires <value>"}
+                val = bool(int(args[0]))
+                if hasattr(stream.io, 'set_crb'):
+                    stream.io.set_crb(val)
+                else:
+                    stream.buffers.crb = val
+                # SimulatedIO has no real TLC cycling stages, so warmup can never complete
+                # naturally (genstg skips force bits when ON_CONTROL=0, auto_follow has
+                # nothing to respond to). Bypass by pre-advancing the warmup counter,
+                # same as kernel handle_error_count() does on fault recovery.
+                if val and isinstance(stream.io, SimulatedIO) and stream._dataset is not None:
+                    mova_on = int(stream.buffers.io[27]) if len(stream.buffers.io) > 27 else 0
+                    if mova_on:
+                        stream.kernel.set_io_flag(27, 1)
+                        stream.kernel.set_crb_in_kernel(True)
+                        stream.kernel.set_demanded_stage(1)
+                        stream.kernel.gs_check()
+                        log.debug("Stream %d: SimulatedIO GS_check bypass triggered", stream_index)
+                return {"t": "ack", "cmd": cmd, "ok": True}
+
+            elif cmd == "FORCE_STAGE":
+                if len(args) < 1:
+                    return {"t": "ack", "cmd": cmd, "ok": False, "err": "FORCE_STAGE requires <stage>"}
+                stream.force_stage(int(args[0]))
+                ipc.publish_event("stage_forced", stage=int(args[0]))
+                return {"t": "ack", "cmd": cmd, "ok": True}
+
+            elif cmd == "SWITCH_PLAN":
+                if len(args) < 1:
+                    return {"t": "ack", "cmd": cmd, "ok": False, "err": "SWITCH_PLAN requires <plan_num>"}
+                plan = int(args[0])
+                ok = stream.kernel.switch_plan(plan)
+                if ok:
+                    ipc.publish_event("plan_switched", plan=plan)
+                return {"t": "ack", "cmd": cmd, "ok": ok}
+
+            elif cmd == "CONNECT_XKOP":
+                if len(args) < 2:
+                    return {"t": "ack", "cmd": cmd, "ok": False, "err": "CONNECT_XKOP requires <host> <port>"}
+                host, port = args[0], int(args[1])
+                old_io = stream.io
+                new_io = XKOPio(host, port, stream.stream_id)
+                if stream._dataset:
+                    c = stream._dataset.constants
+                    new_io.reset_confirms(c.stagon)
+                    ig_matrix = {(ig.from_stage, ig.to_stage): ig.value
+                                 for ig in stream._dataset.interstages}
+                    new_io.set_intergreen_matrix(ig_matrix)
+                stream.io = new_io
+                new_io.start()
+                if hasattr(old_io, 'stop'):
+                    old_io.stop()
+                ipc.publish_event("xkop_connected", host=host, port=port)
+                return {"t": "ack", "cmd": cmd, "ok": True}
+
+            elif cmd == "DISCONNECT_XKOP":
+                if hasattr(stream.io, 'stop'):
+                    stream.io.stop()
+                new_io = SimulatedIO()
+                if stream._dataset:
+                    c = stream._dataset.constants
+                    new_io.reset_confirms(c.stagon)
+                    ig_matrix = {(ig.from_stage, ig.to_stage): ig.value
+                                 for ig in stream._dataset.interstages}
+                    new_io.set_intergreen_matrix(ig_matrix)
+                stream.io = new_io
+                ipc.publish_event("xkop_disconnected")
+                return {"t": "ack", "cmd": cmd, "ok": True}
+
+            elif cmd == "SET_SPEED":
+                if len(args) < 1:
+                    return {"t": "ack", "cmd": cmd, "ok": False, "err": "SET_SPEED requires <multiplier>"}
+                n = int(args[0])
+                if n not in (1, 2, 5):
+                    return {"t": "ack", "cmd": cmd, "ok": False, "err": "speed must be 1, 2, or 5"}
+                stream.kernel.set_speed(n)
+                if isinstance(stream.io, SimulatedIO):
+                    stream.io.speed_multiplier = n
+                return {"t": "ack", "cmd": cmd, "ok": True}
+
+            elif cmd == "SET_TOD_OFFSET":
+                if len(args) < 1:
+                    return {"t": "ack", "cmd": cmd, "ok": False, "err": "SET_TOD_OFFSET requires <hours>"}
+                stream.kernel.time_offset_hours = float(args[0])
+                return {"t": "ack", "cmd": cmd, "ok": True}
+
+            elif cmd == "SET_AUTO_FOLLOW":
+                if len(args) < 1:
+                    return {"t": "ack", "cmd": cmd, "ok": False, "err": "SET_AUTO_FOLLOW requires <0|1>"}
+                if isinstance(stream.io, SimulatedIO):
+                    stream.io.auto_follow = bool(int(args[0]))
+                return {"t": "ack", "cmd": cmd, "ok": True}
+
+            elif cmd == "RESET":
+                stream.stop()
+                time.sleep(0.15)
+                if stream._dataset:
+                    stream.kernel.load_dataset(stream._dataset)
+                    stream.buffers.io[27] = 0
+                    stream.buffers.io[19] = 0
+                    stream.buffers.io[16] = 0
+                    stream.start()
+                    ipc.publish_event("stream_reset")
+                save_state_fn()
+                return {"t": "ack", "cmd": cmd, "ok": True}
+
+            else:
+                return {"t": "ack", "cmd": cmd, "ok": False, "err": f"unknown command: {cmd}"}
+
+        except Exception as exc:
+            log.exception("Stream %d: command %s error", stream_index, cmd)
+            return {"t": "ack", "cmd": cmd, "ok": False, "err": str(exc)}
+
+    return handler
+
+
+# ── Main ────────────────────────────────────────────────────────────────────
 
 def main() -> None:
     if len(sys.argv) < 2:
@@ -35,53 +348,123 @@ def main() -> None:
         print(f"Stream index must be 0–7, got {stream_index}", file=sys.stderr)
         sys.exit(1)
 
+    # ── Logging ───────────────────────────────────────────────────────────────
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(name)s %(levelname)s %(message)s"
     )
     log.info("kernel stream %d: starting", stream_index)
 
-    # --- Phase 1: IPC layer only ---
-    from pci_mova.ipc.server import IPCServer
+    # ── Licence check ─────────────────────────────────────────────────────────
+    from pci_mova.licence.licence import validate
+    licence = validate()
+    if not licence.allows_stream(stream_index):
+        log.info("kernel stream %d: not licensed — exiting cleanly", stream_index)
+        sys.exit(0)  # clean exit — Restart=on-failure does not loop on code 0
+    log.info("kernel stream %d: licence OK (max %d streams)", stream_index, licence.max_streams)
 
+    # ── IPC server ────────────────────────────────────────────────────────────
+    from pci_mova.ipc.server import IPCServer
     ipc = IPCServer(stream_index)
 
-    def handle_command(cmd: str, args: list) -> dict:
-        """Stub handler — Phase 2 will attach the real MovaStream here."""
-        log.debug("kernel %d: cmd %s %s", stream_index, cmd, args)
-        return {"t": "ack", "cmd": cmd, "ok": False, "err": "kernel not yet attached (Phase 1 stub)"}
+    # ── Stream ────────────────────────────────────────────────────────────────
+    from pci_mova.core.stream import MovaStream
+    from pci_mova.core.model.enums import MovaStatus
 
-    ipc.set_command_handler(handle_command)
+    def _on_fault(stream, fault_dict):
+        ipc.publish_error(fault_dict)
+
+    stream = MovaStream(
+        stream_id       = stream_index,
+        on_fault        = _on_fault,
+    )
+
+    def save_state():
+        _save_state(stream, stream_index)
+
+    # ── Wire IPC ──────────────────────────────────────────────────────────────
+    ipc.set_command_handler(_make_cmd_handler(stream, stream_index, ipc, save_state))
     ipc.start()
-    log.info("kernel stream %d: IPC sockets ready (push=%s cmd=%s)",
-             stream_index, ipc._push_path, ipc._cmd_path)
 
-    # --- Signal handling (main thread required for signal.signal) ---
+    # ── Restore state ─────────────────────────────────────────────────────────
+    _restore_state(stream, stream_index)
+
+    # ── MOVA Tools server ─────────────────────────────────────────────────────
+    _start_mova_tools(stream)
+    log.info("kernel stream %d: MOVA Tools server on port %d",
+             stream_index, 6000 + stream_index)
+
+    # ── Signal handling (main thread) ─────────────────────────────────────────
     stop_event = threading.Event()
 
     def on_signal(signum, frame):
-        log.info("kernel stream %d: signal %d received, stopping", stream_index, signum)
+        log.info("kernel stream %d: signal %d — stopping", stream_index, signum)
         stop_event.set()
 
     signal.signal(signal.SIGTERM, on_signal)
     signal.signal(signal.SIGINT, on_signal)
 
-    # --- Main thread: tick loop ---
-    # Phase 2 will replace this stub with the real MovaStream._loop()
-    tick = 0
-    while not stop_event.is_set():
-        tick += 1
-        # Publish a periodic snapshot so clients can verify connectivity
-        ipc.update_snapshot({
-            "stream": stream_index,
-            "tick": tick,
-            "status": "stub",
-            "ts_wall": time.time(),
-        })
-        # Phase 1: no state changes, no events to publish
-        stop_event.wait(0.1)  # 100ms tick, interruptible
+    log.info("kernel stream %d: ready (IPC push=%s cmd=%s)",
+             stream_index, ipc._push_path, ipc._cmd_path)
 
-    # --- Shutdown ---
+    # ── Main loop: publish IPC events + snapshots ─────────────────────────────
+    # Track previous state to detect changes and emit immediate events.
+    prev_cs       = -1
+    prev_on_ctrl  = -1
+    prev_mova_on  = -1
+    prev_status   = None
+    prev_ec       = -1
+    last_msg_seq  = 0
+
+    while not stop_event.is_set():
+        snap = stream.snapshot()
+
+        buf      = snap.get("buffers", {})
+        io_arr   = buf.get("io", [])
+        cs       = buf.get("kernel_current_stage", 0)
+        on_ctrl  = int(io_arr[19]) if len(io_arr) > 19 else 0
+        mova_on  = int(io_arr[27]) if len(io_arr) > 27 else 0
+        ec       = int(io_arr[16]) if len(io_arr) > 16 else 0
+        status   = snap.get("status", {}).get("current")
+
+        # Emit immediate events on state transitions
+        if prev_cs >= 0 and cs != prev_cs:
+            ipc.publish_event("phase_change", from_stage=prev_cs, to_stage=cs)
+
+        if prev_on_ctrl >= 0 and on_ctrl != prev_on_ctrl:
+            ipc.publish_event("on_control", value=on_ctrl)
+
+        if prev_mova_on >= 0 and mova_on != prev_mova_on:
+            ipc.publish_event("mova_on", value=mova_on)
+
+        if prev_status is not None and status != prev_status:
+            ipc.publish_event("status_change", status=status)
+
+        if prev_ec >= 0 and ec != prev_ec:
+            ipc.publish_event("ec_change", ec=ec)
+
+        # Drain new kernel decision messages
+        new_msgs = stream.messages_since(last_msg_seq)
+        for msg in new_msgs:
+            ipc.publish_message(msg)
+        if new_msgs:
+            last_msg_seq = new_msgs[-1]["seq"]
+
+        # Periodic snapshot (rate-limited inside IPCServer to 2 Hz)
+        ipc.update_snapshot(snap)
+
+        prev_cs      = cs
+        prev_on_ctrl = on_ctrl
+        prev_mova_on = mova_on
+        prev_status  = status
+        prev_ec      = ec
+
+        stop_event.wait(0.1)
+
+    # ── Shutdown ──────────────────────────────────────────────────────────────
+    log.info("kernel stream %d: shutting down", stream_index)
+    save_state()
+    stream.stop()
     ipc.stop()
     log.info("kernel stream %d: stopped", stream_index)
 

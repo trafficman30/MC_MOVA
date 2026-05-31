@@ -4,3 +4,5 @@ __pycache__/
 *.so
 .env
 /tmp/mova_*.sock
+pci_mova/datasets/.stream_state_*.json
+pci_mova/logs/
