@@ -108,7 +108,7 @@ HTML = r'''<!DOCTYPE html>
   .content { flex: 1; overflow: hidden; padding: 16px 20px;
              height: calc(100vh - 48px); }
   .panel   { display: none; }
-  .panel.active { display: block; height: 100%; overflow-y: auto; }
+  .panel.active { display: block; height: 100%; overflow-y: auto; width: 100%; }
 
   /* ── Auth ── */
   body.viewer-mode .admin-only { display: none !important; }
@@ -276,7 +276,7 @@ HTML = r'''<!DOCTYPE html>
   .log-search:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 2px #e0e7ff; }
 
   /* ── MOVA stream card CSS (matches /opt/MOVA design) ───────────────────── */
-  .mova-card          { background:#fff; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; transition:border-color .2s; margin-bottom:12px; }
+  .mova-card          { background:#fff; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; transition:border-color .2s; margin-bottom:12px; width:100%; box-sizing:border-box; }
   .mova-card.active   { border-color:#00d4ff; }
   .mova-card.warmup   { border-color:#b45309; }
   .mova-card.fault    { border-color:#b91c1c; }
