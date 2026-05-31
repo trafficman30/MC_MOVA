@@ -309,7 +309,8 @@ HTML = r'''<!DOCTYPE html>
   .mova-bit-dot.on    { background:#15803d; border-color:#15803d; box-shadow:0 0 3px rgba(21,128,61,.4); }
   .mova-bit-dot.amber { background:#b45309; border-color:#b45309; }
   .mova-bit-dot.red   { background:#b91c1c; border-color:#b91c1c; box-shadow:0 0 3px rgba(185,28,28,.4); }
-  .mova-bit-dot.cyan  { background:#0891b2; border-color:#0891b2; box-shadow:0 0 3px rgba(8,145,178,.4); }
+  .mova-bit-dot.cyan  { background:#0891b2; border-color:#0891b2; box-shadow:0 0 3px rgba(8,145,178,.4); animation:mova-sync-pulse .5s ease-in-out infinite alternate; }
+  @keyframes mova-sync-pulse { from{opacity:1;box-shadow:0 0 3px rgba(8,145,178,.4)} to{opacity:.35;box-shadow:0 0 8px rgba(8,145,178,.9)} }
   .mova-fault-item    { padding:4px 10px; background:#fee2e2; border:1px solid #fca5a5; border-radius:3px; font-family:"Courier New",monospace; font-size:11px; color:#991b1b; margin-bottom:3px; }
   .mova-ctrl-row      { display:flex; gap:6px; padding:10px 16px; border-top:1px solid #e5e7eb; background:#f9fafb; flex-wrap:wrap; align-items:center; }
   .mova-btn           { padding:5px 14px; border:1px solid #e5e7eb; border-radius:4px; background:#fff; color:#111827; font-family:"Courier New",monospace; font-size:11px; cursor:pointer; transition:all .15s; text-transform:uppercase; font-weight:500; white-space:nowrap; }
@@ -3616,12 +3617,14 @@ function showMova(n, navEl) {
   const p = document.getElementById('panel-mova-' + n);
   if (p) p.classList.add('active');
   if (navEl) navEl.classList.add('active');
-  // Invalidate bit grids then immediately rebuild at correct window width
-  ['mova-dets-','mova-confs-'].forEach(pfx => {
-    const el = document.getElementById(pfx + n);
-    if (el) el._built = null;
-  });
-  if (state.mova) applyMovaUpdate(state.mova);
+  // Invalidate and rebuild — small delay so display:block has taken effect
+  setTimeout(() => {
+    ['mova-dets-','mova-confs-'].forEach(pfx => {
+      const el = document.getElementById(pfx + n);
+      if (el) el._built = null;
+    });
+    if (Array.isArray(state.mova) && state.mova.length) applyMovaUpdate(state.mova);
+  }, 30);
   loadMovaDatasets(n);
 }
 
@@ -4078,31 +4081,35 @@ def _build_pills():
 # ── Background poller ─────────────────────────────────────────────────────────
 
 def _poll_loop():
-    """Push IO/conditioner/RTIG snapshots every second."""
+    """Push IO/conditioner/RTIG snapshots every second; MOVA at 500ms."""
+    _mova_tick = 0
     while True:
-        time.sleep(1.0)
+        time.sleep(0.5)
+        _mova_tick += 1
         try:
             payload = {}
-            if _io:
-                payload['io_signals'] = [
-                    [name, owner, _io.read(name)]
-                    for name, owner in _io.registered_signals()
-                ]
-            if _cond:
-                payload['cond_rules'] = _cond_snapshot()
-            if _rtig_svc:
-                payload['rtig'] = _rtig_svc.snapshot()
-            if _flir:
-                payload['flir'] = _flir_snapshot()
-            if _agd:
-                payload['agd'] = _agd_snapshot()
-            if _autodim:
-                payload['autodim'] = _autodim_snapshot()
-            if _offline_plan:
-                payload['offplan'] = _offplan_snapshot()
+            if _mova_tick % 2 == 0:   # 1 Hz — IO/services
+                if _io:
+                    payload['io_signals'] = [
+                        [name, owner, _io.read(name)]
+                        for name, owner in _io.registered_signals()
+                    ]
+                if _cond:
+                    payload['cond_rules'] = _cond_snapshot()
+                if _rtig_svc:
+                    payload['rtig'] = _rtig_svc.snapshot()
+                if _flir:
+                    payload['flir'] = _flir_snapshot()
+                if _agd:
+                    payload['agd'] = _agd_snapshot()
+                if _autodim:
+                    payload['autodim'] = _autodim_snapshot()
+                if _offline_plan:
+                    payload['offplan'] = _offplan_snapshot()
+                payload['lastupdate'] = time.strftime('%H:%M:%S')
+            # MOVA at 500ms always
             if _kernel_registry and _mova_stream_count > 0:
                 payload['mova'] = _mova_all_snapshots()
-            payload['lastupdate']    = time.strftime('%H:%M:%S')
             payload['mem_rss']       = _read_rss_mb()
             payload['mem_limit']     = _mem_limit_mb
             ds = _driver_status()
