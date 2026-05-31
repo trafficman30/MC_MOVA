@@ -4524,6 +4524,8 @@ def _write_platform_cfg(data):
         f'offline_plan = {svcs.get("offline_plan", "disabled")}',
         f'io_fault_timeout = {int(svcs.get("io_fault_timeout", 30))}',
         f'memory_limit_mb  = {int(svcs.get("memory_limit_mb",  300))}',
+        f'mova_streams = {int(svcs.get("mova_streams", _mova_stream_count or 0))}',
+        f'web_port     = {int(svcs.get("web_port", 12008))}',
         '',
         '[XKOP]',
         f'ip   = {xkop["ip"]}',
