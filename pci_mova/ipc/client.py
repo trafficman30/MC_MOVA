@@ -123,6 +123,14 @@ class KernelClient:
         with self._cb_lock:
             self._event_cbs.append(callback)
 
+    def off_event(self, callback: Callable[[dict], None]) -> None:
+        """Remove a previously registered event callback."""
+        with self._cb_lock:
+            try:
+                self._event_cbs.remove(callback)
+            except ValueError:
+                pass
+
     # ------------------------------------------------------------------
     # Command interface
     # ------------------------------------------------------------------

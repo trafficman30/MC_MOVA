@@ -5426,24 +5426,25 @@ def mova_stream_live(n):
 
     client.on_event(_on_push)
 
-    # Also push snapshots on a timer so the browser gets state even when
-    # there are no immediate events (e.g. no stage changes)
     def _generate():
         import json as _json
-        # Send current snapshot immediately on connect
-        snap = _mova_snapshot(n)
-        yield f'data: {_json.dumps(snap)}\n\n'
-        while True:
-            try:
-                msg = q.get(timeout=0.15)   # ~10Hz max
-                # Wrap IPC message with stream context
-                snap = _mova_snapshot(n)
-                snap['_ipc'] = msg
-                yield f'data: {_json.dumps(snap)}\n\n'
-            except _queue.Empty:
-                # Heartbeat snapshot so browser stays fresh
-                snap = _mova_snapshot(n)
-                yield f'data: {_json.dumps(snap)}\n\n'
+        try:
+            # Send current snapshot immediately on connect
+            snap = _mova_snapshot(n)
+            yield f'data: {_json.dumps(snap)}\n\n'
+            while True:
+                try:
+                    msg = q.get(timeout=0.15)   # ~10Hz max
+                    snap = _mova_snapshot(n)
+                    snap['_ipc'] = msg
+                    yield f'data: {_json.dumps(snap)}\n\n'
+                except _queue.Empty:
+                    # Heartbeat — keeps connection alive, refreshes state
+                    snap = _mova_snapshot(n)
+                    yield f'data: {_json.dumps(snap)}\n\n'
+        finally:
+            # Browser disconnected — remove callback so it doesn't accumulate
+            client.off_event(_on_push)
 
     resp = Response(_generate(), mimetype='text/event-stream')
     resp.headers['Cache-Control'] = 'no-cache'
