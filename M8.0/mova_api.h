@@ -131,4 +131,3 @@ int MI_get_tma_period_sec(void);        /* TMAPRD period length in seconds */
 
 #endif
 
-void MI_gs_check(void);

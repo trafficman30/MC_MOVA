@@ -388,10 +388,6 @@ class MovaKernel:
         lib.MI_get_kernel_version.argtypes = []
         lib.MI_get_kernel_version.restype  = ctypes.c_char_p
 
-        # Direct GS_check call — simulation warmup bypass
-        lib.MI_gs_check.argtypes = []
-        lib.MI_gs_check.restype  = None
-
         # TOD time offset for testing
         lib.MI_set_time_offset.argtypes = [ctypes.c_long]
         lib.MI_set_time_offset.restype  = None
@@ -804,20 +800,6 @@ class MovaKernel:
         """
         if self._lib is not None and not self._simulation:
             self._lib.MI_set_warmup_counter(value)
-
-    def set_crb_in_kernel(self, value: bool) -> None:
-        """Write CRB directly to confin[mxconf-1] in the C kernel. Used in bypass path."""
-        if self._lib is not None and not self._simulation:
-            self._lib.MI_set_crb_bit(1 if value else 0)
-
-    def gs_check(self) -> None:
-        """
-        Call GS_check_and_update_io_flags() directly.
-        Used in SimulatedIO mode to bypass the warmup_check() PM-transition gate.
-        Requires MOVA_ON=1 and WC set before calling.
-        """
-        if self._lib is not None and not self._simulation:
-            self._lib.MI_gs_check()
 
     def set_io_flag(self, index: int, value: int) -> bool:
         """Write directly to Tcomshr->io[index] in the C kernel (0-63 valid)."""

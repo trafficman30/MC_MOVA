@@ -115,12 +115,6 @@ def _restore_state(stream, stream_index: int) -> None:
         if mova_on:
             stream.buffers.io[27] = 1
             log.info("Stream %d: MOVA_ON restored", stream_index)
-            if isinstance(stream.io, _Sim) and stream._dataset is not None:
-                stream.kernel.set_io_flag(27, 1)
-                stream.kernel.set_crb_in_kernel(True)
-                stream.kernel.set_demanded_stage(1)
-                stream.kernel.gs_check()
-                log.debug("Stream %d: SimulatedIO GS_check bypass triggered", stream_index)
     else:
         log.warning("Stream %d: kernel rejected restored dataset '%s'", stream_index, filename)
 
@@ -181,14 +175,6 @@ def _make_cmd_handler(stream, stream_index: int, ipc, save_state_fn):
                 if idx == 27 and val == 0:  # MOVA_ON off → reset warmup
                     stream.kernel.set_warmup_counter(-1)
                 stream.buffers.io[idx] = val
-                # MOVA_ON=1 with CRB=True in SimulatedIO → bypass warmup (same as SET_CRB path)
-                if idx == 27 and val == 1 and isinstance(stream.io, SimulatedIO) and stream._dataset is not None:
-                    if stream.buffers.crb:
-                        stream.kernel.set_io_flag(27, 1)
-                        stream.kernel.set_crb_in_kernel(True)
-                        stream.kernel.set_demanded_stage(1)
-                        stream.kernel.gs_check()
-                        log.debug("Stream %d: SimulatedIO GS_check bypass triggered", stream_index)
                 save_state_fn()
                 ipc.publish_event("io_set", index=idx, value=val)
                 return {"t": "ack", "cmd": cmd, "ok": True}
@@ -221,18 +207,6 @@ def _make_cmd_handler(stream, stream_index: int, ipc, save_state_fn):
                     stream.io.set_crb(val)
                 else:
                     stream.buffers.crb = val
-                # SimulatedIO has no real TLC cycling stages, so warmup can never complete
-                # naturally (genstg skips force bits when ON_CONTROL=0, auto_follow has
-                # nothing to respond to). Bypass by pre-advancing the warmup counter,
-                # same as kernel handle_error_count() does on fault recovery.
-                if val and isinstance(stream.io, SimulatedIO) and stream._dataset is not None:
-                    mova_on = int(stream.buffers.io[27]) if len(stream.buffers.io) > 27 else 0
-                    if mova_on:
-                        stream.kernel.set_io_flag(27, 1)
-                        stream.kernel.set_crb_in_kernel(True)
-                        stream.kernel.set_demanded_stage(1)
-                        stream.kernel.gs_check()
-                        log.debug("Stream %d: SimulatedIO GS_check bypass triggered", stream_index)
                 return {"t": "ack", "cmd": cmd, "ok": True}
 
             elif cmd == "FORCE_STAGE":

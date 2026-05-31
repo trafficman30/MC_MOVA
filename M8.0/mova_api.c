@@ -775,22 +775,3 @@ int MI_get_tma_period_sec(void)
     return pTmaData->periodSec;
 }
 
-/* Call GS_check_and_update_io_flags() directly — bypasses warmup_check() PM-transition
- * gate. Used in simulation mode (SimulatedIO) where no real TLC provides stage confirms
- * and warmup can't cycle naturally. Safe to call when MOVA_ON=1 and WC is set; has the
- * same effect as warmup completing organically. */
-extern void GS_check_and_update_io_flags(void);
-
-void MI_gs_check(void)
-{
-    if (Tcomshr == NULL) return;
-    /* Set both snow (detscn tracking) and p_junction->current_stage (junction handler)
-     * to stage 1 before calling GS_check. GS_check calls CI_set_demanded_stage(
-     * CI_get_current_stage()) — if current_stage=0 (INTERGREEN) the demanded stage
-     * is set to 0, causing INVALID_STAGE_DEMANDED when genstg runs inside GS_check. */
-    if (Tcomshr->snow == 0 && Tcomshr->stages > 0) {
-        Tcomshr->snow = 1;
-        CI_set_current_stage(1);
-    }
-    GS_check_and_update_io_flags();
-}
