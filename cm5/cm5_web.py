@@ -3469,9 +3469,10 @@ function _movaSetBits(container_id, values, cls_on) {
   if (!c) return;
   if (!c._built || c._built !== values.length) {
     c.innerHTML = '';
-    const availW    = (c.closest('.mova-card')||c).offsetWidth - 32;
+    // offsetWidth is 0 when panel is hidden — use window width instead
+    const availW    = Math.max(400, window.innerWidth - 196 - 80); // subtract sidebar + padding/margins
     const dotW      = 22;
-    const maxPerRow = Math.max(8, Math.floor(availW / dotW));
+    const maxPerRow = Math.floor(availW / dotW);
     const sizes     = [64, 32, 16, 8];
     const batchSize = sizes.find(s => s <= maxPerRow) || 8;
     for (let start = 0; start < values.length; start += batchSize) {
@@ -3615,6 +3616,11 @@ function showMova(n, navEl) {
   const p = document.getElementById('panel-mova-' + n);
   if (p) p.classList.add('active');
   if (navEl) navEl.classList.add('active');
+  // Invalidate bit grids so they rebuild at correct width now panel is visible
+  ['mova-dets-','mova-confs-'].forEach(pfx => {
+    const el = document.getElementById(pfx + n);
+    if (el) el._built = null;
+  });
   loadMovaDatasets(n);
 }
 
