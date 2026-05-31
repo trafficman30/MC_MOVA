@@ -280,7 +280,7 @@ HTML = r'''<!DOCTYPE html>
   .mova-card.active   { border-color:#00d4ff; }
   .mova-card.warmup   { border-color:#b45309; }
   .mova-card.fault    { border-color:#b91c1c; }
-  .mova-card-hdr      { padding:8px 16px; background:#1a2744; display:flex; align-items:center; justify-content:space-between; }
+  .mova-card-hdr      { padding:8px 16px; background:#1a2744; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; }
   .mova-card-title    { font-family:"Courier New",monospace; font-size:13px; font-weight:600; color:#fff; letter-spacing:.06em; }
   .mova-status-badge  { font-size:10px; font-weight:600; padding:2px 10px; border-radius:20px; white-space:nowrap; letter-spacing:.04em; font-family:"Courier New",monospace; }
   .mova-badge-control { background:#d1fae5; color:#065f46; }
@@ -289,8 +289,8 @@ HTML = r'''<!DOCTYPE html>
   .mova-badge-fault   { background:#fee2e2; color:#991b1b; }
   .mova-badge-other   { background:#f0f9ff; color:#0369a1; }
   .mova-status-row    { display:flex; border-bottom:1px solid #e5e7eb; background:#fff; flex-wrap:wrap; }
-  .mova-status-cell   { padding:7px 14px; border-right:1px solid #e5e7eb; flex-shrink:0; }
-  .mova-status-cell:last-child { border-right:none; flex:1; }
+  .mova-status-cell   { padding:7px 14px; border-right:1px solid #e5e7eb; flex-shrink:0; min-width:80px; }
+  .mova-status-cell:last-child { border-right:none; flex:1; min-width:80px; }
   .mova-slabel        { font-family:"Courier New",monospace; font-size:9px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:#6b7280; margin-bottom:3px; }
   .mova-sval          { font-family:"Courier New",monospace; font-size:12px; font-weight:600; color:#111827; display:flex; align-items:center; gap:6px; }
   .mova-sval.on       { color:#15803d; }
