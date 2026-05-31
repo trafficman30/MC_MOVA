@@ -3617,7 +3617,9 @@ function showMova(n, navEl) {
   const p = document.getElementById('panel-mova-' + n);
   if (p) p.classList.add('active');
   if (navEl) navEl.classList.add('active');
-  // Invalidate and rebuild — small delay so display:block has taken effect
+  // Subscribe to per-stream high-frequency SSE
+  _movaSubscribe(n);
+  // Invalidate and rebuild bit grids after panel is visible
   setTimeout(() => {
     ['mova-dets-','mova-confs-'].forEach(pfx => {
       const el = document.getElementById(pfx + n);
@@ -3724,6 +3726,27 @@ es.onerror   = () => {
   document.getElementById('status-pills').innerHTML =
     '<span class="pill pill-err">SSE disconnected</span>';
 };
+
+// ── Per-stream high-frequency SSE (proxies IPC push socket directly) ─────────
+const _movaES = {};   // n → EventSource
+
+function _movaSubscribe(n) {
+  if (_movaES[n]) return;   // already subscribed
+  const s = new EventSource('/api/mova/stream/' + n + '/live');
+  s.onmessage = e => {
+    const data = JSON.parse(e.data);
+    // Update just this stream in state.mova
+    if (!state.mova) state.mova = [];
+    state.mova[n] = data;
+    applyMovaUpdate([data]);
+  };
+  s.onerror = () => {};   // silent — shared SSE shows connectivity
+  _movaES[n] = s;
+}
+
+function _movaUnsubscribe(n) {
+  if (_movaES[n]) { _movaES[n].close(); delete _movaES[n]; }
+}
 </script>
 </body>
 </html>
@@ -5375,6 +5398,57 @@ def api_ug405_scns_post():
 @app.route('/mova/stream/<int:n>')
 def mova_stream_page(n):
     return _render_page()
+
+
+@app.route('/api/mova/stream/<int:n>/live')
+def mova_stream_live(n):
+    """
+    Per-stream SSE endpoint — proxies the IPC push socket directly.
+    Browser subscribes here for high-frequency MOVA updates (~10Hz)
+    without burdening the shared /stream SSE.
+    """
+    import queue as _queue
+
+    if _kernel_registry is None:
+        return Response('data: {}\n\n', mimetype='text/event-stream')
+
+    client = _kernel_registry.get(n)
+    if client is None:
+        return Response('data: {}\n\n', mimetype='text/event-stream')
+
+    q = _queue.Queue(maxsize=20)
+
+    def _on_push(msg):
+        try:
+            q.put_nowait(msg)
+        except _queue.Full:
+            pass   # browser too slow — drop rather than block kernel reader
+
+    client.on_event(_on_push)
+
+    # Also push snapshots on a timer so the browser gets state even when
+    # there are no immediate events (e.g. no stage changes)
+    def _generate():
+        import json as _json
+        # Send current snapshot immediately on connect
+        snap = _mova_snapshot(n)
+        yield f'data: {_json.dumps(snap)}\n\n'
+        while True:
+            try:
+                msg = q.get(timeout=0.15)   # ~10Hz max
+                # Wrap IPC message with stream context
+                snap = _mova_snapshot(n)
+                snap['_ipc'] = msg
+                yield f'data: {_json.dumps(snap)}\n\n'
+            except _queue.Empty:
+                # Heartbeat snapshot so browser stays fresh
+                snap = _mova_snapshot(n)
+                yield f'data: {_json.dumps(snap)}\n\n'
+
+    resp = Response(_generate(), mimetype='text/event-stream')
+    resp.headers['Cache-Control'] = 'no-cache'
+    resp.headers['X-Accel-Buffering'] = 'no'
+    return resp
 
 
 @app.route('/api/mova/stream/<int:n>/cmd', methods=['POST'])
