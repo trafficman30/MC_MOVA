@@ -617,17 +617,45 @@ Do NOT mix venvs.
 
 See Phase 2 section in Implementation phases for full detail.
 
-### Phase 3 — NEXT: CM5 IOBus IO (skip SimulatedIO)
-**Decision:** Skip SimulatedIO wiring entirely. Connect directly to CM5 IOBus.
-- Implement `cm5_io.py` Unix socket client: BATCH read detectors/confirms/CRB, W write forces
-- Apply 150ms rising-edge latch per detector
-- Kernel processes connect to CM5 IOBus automatically if socket present
-- SimulatedIO remains available as fallback when CM5 not present
+### Phase 3 — CM5 IOBus IO ✅ COMPLETE (2026-05-31)
 
-### Phase 4 — Web entry point
-Bring in `api/` + `web/static/` from `/opt/MOVA/pci_mova/`.
-Update route handlers → `KernelClient.send_command()`.
-Update WebSocket handlers → `KernelClient` push stream.
+`pci_mova/core/io/cm5_io.py` — full implementation:
+- BATCH read all detectors/confirms/CRB in one round-trip per tick
+- 150ms rising-edge latch per detector
+- W writes for forces/TO/HI/SYNC after each tick
+- Reconnect on socket failure
+- `default_signal_map(dataset)` auto-generates standard XKOP convention
+
+`config/streams.json` — per-stream signal mapping:
+- Auto-generated from dataset on LOAD (standard convention: det N → xkop.i.100+N, etc.)
+- User-editable for non-standard wiring
+- CM5IO activated automatically if entry present; SimulatedIO fallback if not
+
+`kernel_main.py` — tries CM5IO on startup, falls back to SimulatedIO.
+On LOAD, generates signal map if not already present.
+
+**Standard convention:**
+- MOVA det N (1-based) → `xkop.i.{100+N}`
+- Stage confirm N → `xkop.i.{N}`
+- CRB → `xkop.i.32`
+- Stage force N → `xkop.o.{N}`
+- TO/HI/SYNC → `xkop.o.11/12/13`
+
+**Test path:** XKOPio → PTC-1 Sim (use CONNECT_XKOP IPC command to test before CM5 IOBus is live)
+
+### Phase 4 — MOVA UI in CM5 web (NEXT)
+
+**Decision:** MOVA stream tabs live on the CM5 web tree, not a separate web process.
+
+One tab per licensed stream in CM5 web (`cm5_web.py`):
+- Stream runtime view: status, stage, diagnostics, kernel messages, derived, TMA
+- Buttons: Start / Stop / MOVA ON / Reset / **I/O MAP**
+- I/O MAP opens signal mapping screen — dataset drives the list, user edits xkop channels
+- Dataset load in CM5 web → sends LOAD via IPC to kernel → kernel configures CM5IO
+- Pop-out button → opens stream in its own window (multi-stream monitoring)
+- No SimulatedIO option in the UI — IO is always real hardware
+
+CM5 web connects to kernel IPC push sockets for live state, sends commands via IPC cmd socket.
 
 ### Phase 5 — Route + WS handlers
 One-for-one proxy of all existing endpoints through IPC.

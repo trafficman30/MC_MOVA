@@ -1,0 +1,14 @@
+{
+  "_comment": "Per-stream IO signal mapping. Auto-generated from dataset on LOAD, edit for non-standard wiring.",
+  "_schema": {
+    "type":         "cm5 | xkop | simulated",
+    "socket":       "/tmp/cm5_iobus.sock",
+    "det_map":      {"<mova_det_0based>": "<iobus_signal>"},
+    "confirm_map":  {"<confirm_0based>":  "<iobus_signal>"},
+    "crb":          "<iobus_signal>",
+    "force_map":    {"<force_0based>":    "<iobus_signal>"},
+    "to":           "<iobus_signal>",
+    "hi":           "<iobus_signal>",
+    "sync":         "<iobus_signal>"
+  }
+}

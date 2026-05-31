@@ -119,6 +119,65 @@ def _restore_state(stream, stream_index: int) -> None:
         log.warning("Stream %d: kernel rejected restored dataset '%s'", stream_index, filename)
 
 
+# ── Signal map / IO config ─────────────────────────────────────────────────
+
+_STREAMS_JSON = os.path.join(os.path.dirname(__file__), "..", "config", "streams.json")
+
+
+def _load_streams_json() -> dict:
+    import json as _json
+    path = os.path.abspath(_STREAMS_JSON)
+    if not os.path.isfile(path):
+        return {}
+    try:
+        with open(path) as fh:
+            data = _json.load(fh)
+        return {k: v for k, v in data.items() if not k.startswith("_")}
+    except Exception as exc:
+        log.warning("streams.json read error: %s", exc)
+        return {}
+
+
+def _save_streams_json(data: dict) -> None:
+    import json as _json
+    path = os.path.abspath(_STREAMS_JSON)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    try:
+        existing = _load_streams_json()
+        existing.update(data)
+        with open(path, "w") as fh:
+            _json.dump(existing, fh, indent=2)
+    except Exception as exc:
+        log.warning("streams.json write error: %s", exc)
+
+
+def _ensure_signal_map(stream_index: int, dataset) -> None:
+    """Auto-generate standard signal map from dataset if not already present."""
+    from pci_mova.core.io.cm5_io import default_signal_map
+    cfg = _load_streams_json()
+    key = str(stream_index)
+    if key in cfg and "det_map" in cfg[key].get("io", {}):
+        return   # already configured — don't overwrite user edits
+    sig_map = default_signal_map(dataset)
+    _save_streams_json({key: {"io": sig_map}})
+    log.info("Stream %d: signal map auto-generated (%d dets, %d confirms)",
+             stream_index, len(sig_map["det_map"]), len(sig_map["confirm_map"]))
+
+
+def _build_cm5_io(stream_index: int) -> object:
+    """
+    Build CM5IO from streams.json config for this stream.
+    Returns None if no config present or socket unavailable.
+    """
+    from pci_mova.core.io.cm5_io import CM5IO, IOBUS_SOCKET
+    cfg = _load_streams_json()
+    io_cfg = cfg.get(str(stream_index), {}).get("io", {})
+    if not io_cfg or io_cfg.get("type") not in ("cm5", None):
+        return None
+    socket_path = io_cfg.get("socket", IOBUS_SOCKET)
+    return CM5IO(io_cfg, stream_index=stream_index, socket_path=socket_path)
+
+
 # ── IPC command handler ─────────────────────────────────────────────────────
 
 def _make_cmd_handler(stream, stream_index: int, ipc, save_state_fn):
@@ -129,6 +188,7 @@ def _make_cmd_handler(stream, stream_index: int, ipc, save_state_fn):
     from pci_mova.config import DATASET_DIR
     from pci_mova.core.io.simulated import SimulatedIO
     from pci_mova.core.io.xkop_io import XKOPio
+    from pci_mova.core.io.cm5_io import CM5IO, default_signal_map
 
     def handler(cmd: str, args: list) -> dict:
         try:
@@ -150,9 +210,10 @@ def _make_cmd_handler(stream, stream_index: int, ipc, save_state_fn):
                     time.sleep(0.15)
                 ok = stream.load_dataset(all_streams[ctrl_id])
                 if ok:
-                    # Auto-enable follow in simulation mode (no hardware)
                     if isinstance(stream.io, SimulatedIO):
                         stream.io.auto_follow = True
+                    # Auto-generate signal map if not already configured
+                    _ensure_signal_map(stream_index, all_streams[ctrl_id])
                     save_state_fn()
                     ipc.publish_event("dataset_loaded", path=ds_path, ctrl_id=ctrl_id)
                 return {"t": "ack", "cmd": cmd, "ok": ok,
@@ -341,6 +402,15 @@ def main() -> None:
     from pci_mova.ipc.server import IPCServer
     ipc = IPCServer(stream_index)
 
+    # ── IO layer — CM5 IOBus if configured, else SimulatedIO ──────────────────
+    io_layer = _build_cm5_io(stream_index)
+    if io_layer:
+        log.info("kernel stream %d: using CM5IO", stream_index)
+    else:
+        from pci_mova.core.io.simulated import SimulatedIO
+        io_layer = SimulatedIO()
+        log.info("kernel stream %d: no CM5 config — using SimulatedIO", stream_index)
+
     # ── Stream ────────────────────────────────────────────────────────────────
     from pci_mova.core.stream import MovaStream
     from pci_mova.core.model.enums import MovaStatus
@@ -349,8 +419,9 @@ def main() -> None:
         ipc.publish_error(fault_dict)
 
     stream = MovaStream(
-        stream_id       = stream_index,
-        on_fault        = _on_fault,
+        stream_id = stream_index,
+        io_layer  = io_layer,
+        on_fault  = _on_fault,
     )
 
     def save_state():
