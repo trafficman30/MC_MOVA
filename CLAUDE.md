@@ -7,6 +7,10 @@
 - **Ask before speculative fixes** — especially kernel C code where a wrong change crashes.
 - After modifying Python files, always run `python3 -m py_compile <file>` at minimum.
 - Do not add unprompted refactors or features — scope to what was asked.
+- **NEVER work in /opt/MOVA or /opt/CM5.** All work happens in /opt/MC_MOVA.
+  - Kernel C changes: `M8.0/` → `make -f Makefile.linux` deploys to `pci_mova/core/kernel/libmova.so`
+  - CM5 changes: `cm5/` only
+  - MOVA Python changes: `pci_mova/` only
 
 ---
 
@@ -204,19 +208,20 @@ No framing, no CRC. Unix domain socket is reliable and local.
 │           ├── analysis.html
 │           └── ...
 │
-├── services/                    ← CM5 services, ported as standalone processes
-│   ├── iobus/                   ← IOBus server + hardware drivers
-│   │   ├── server.py            ← Unix socket server (/tmp/pci_iobus.sock)
-│   │   ├── driver_xkop.py       ← XKOP TCP driver → IOBus
-│   │   ├── driver_rpdb.py       ← RPDB TCP driver → IOBus
-│   │   └── driver_gpio.py       ← future GPIO
-│   ├── ug405/                   ← SNMP UTC outstation (from CM5)
-│   ├── rtig/                    ← RTIG real-time feed (from CM5)
-│   ├── autodim/                 ← astronomical dim/bright (from CM5)
-│   ├── conditioner/             ← IO logic/conditioning (from CM5)
-│   ├── offline_plan/            ← fixed-time plan fallback (from CM5)
-│   ├── flir/                    ← FLIR thermal cameras (from CM5)
-│   └── agd/                     ← AGD650 radar (from CM5)
+├── cm5/                         ← ★ CM5 platform (copied from /opt/CM5)
+│   ├── main.py                  ← CM5 entry point
+│   ├── cm5_web.py               ← Flask/SSE web dashboard — Phase 4 adds MOVA tabs here
+│   ├── core/                    ← IOBus, config
+│   ├── ug405/                   ← SNMP UTC outstation
+│   ├── rtig/                    ← RTIG real-time feed
+│   ├── autodim/                 ← astronomical dim/bright
+│   ├── conditioner/             ← IO logic/conditioning
+│   ├── offline_plan/            ← fixed-time plan fallback
+│   ├── flir/                    ← FLIR thermal cameras
+│   ├── agd/                     ← AGD650 radar
+│   ├── io/                      ← XKOP, RPDB drivers
+│   ├── platform.cfg             ← service enables, IOBus, logging
+│   └── CLAUDE.md                ← CM5 context (read before CM5 changes)
 │
 ├── config/                      ← platform config
 │   ├── platform.cfg             ← service enables, IOBus, logging

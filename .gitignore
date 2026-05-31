@@ -8,3 +8,9 @@ pci_mova/datasets/.stream_state_*.json
 pci_mova/logs/
 M8.0/build/
 M8.0/*.so
+cm5/logs/
+cm5/cm5.db
+cm5/agd.log
+cm5/__pycache__/
+cm5/*/__pycache__/
+cm5/*/*/__pycache__/
