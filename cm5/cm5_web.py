@@ -276,7 +276,7 @@ HTML = r'''<!DOCTYPE html>
   .log-search:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 2px #e0e7ff; }
 
   /* ── MOVA stream card CSS (matches /opt/MOVA design) ───────────────────── */
-  .mova-card          { background:#fff; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; transition:border-color .2s; margin-bottom:12px; width:100%; box-sizing:border-box; }
+  .mova-card          { background:#fff; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; transition:border-color .2s; margin-bottom:12px; width:calc(100% - 40px); margin-left:20px; margin-right:20px; box-sizing:border-box; }
   .mova-card.active   { border-color:#00d4ff; }
   .mova-card.warmup   { border-color:#b45309; }
   .mova-card.fault    { border-color:#b91c1c; }
@@ -1218,7 +1218,7 @@ HTML = r'''<!DOCTYPE html>
 
     {% for n in range(mova_stream_count) %}
     <!-- ── MOVA Stream {{ n+1 }} ── -->
-    <div id="panel-mova-{{n}}" class="panel" style="padding:0;background:#f0f2f5;border:none">
+    <div id="panel-mova-{{n}}" class="panel" style="padding:0;">
       <div class="mova-card" id="mova-card-{{n}}">
 
         <!-- Card header -->
