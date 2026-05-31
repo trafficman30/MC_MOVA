@@ -49,6 +49,9 @@ _mem_limit_mb     = 0
 _xkop_driver      = None
 _rpdb_driver      = None
 _offline_plan     = None
+_kernel_registry  = None   # pci_mova KernelRegistry (MOVA stream IPC clients)
+_mova_stream_count = 0     # licensed streams (set by start_web)
+_mova_datasets_dir = None  # path to .mxds directory
 _snmp_cfg_state         = {}             # field → {value, ts}  — persistent instation config
 _snmp_opmode_trans      = {}             # '1→2' etc. → ts of last occurrence
 _snmp_ctrl_log          = deque(maxlen=30)  # rolling Control SET log
@@ -325,6 +328,16 @@ HTML = r'''<!DOCTYPE html>
     <div class="nav-item" onclick="show('offplan',this);loadOffplanCfg()">
       <span class="nav-icon">📅</span> Fixed-Time Plan
     </div>
+
+    {% if mova_stream_count > 0 %}
+    <div class="nav-group-label">MOVA</div>
+    {% for n in range(mova_stream_count) %}
+    <div class="nav-item" id="nav-mova-{{n}}" onclick="showMova({{n}},this)">
+      <span class="nav-icon">🚦</span> Stream {{n}}
+      <span id="mova-pill-{{n}}" style="margin-left:auto;font-size:9px;padding:1px 5px;border-radius:8px;background:#374151;color:#9ca3af">—</span>
+    </div>
+    {% endfor %}
+    {% endif %}
 
     <div class="nav-group-label">Administration</div>
     <div class="nav-item" onclick="show('config',this);loadPlatformCfg();loadSensorsCfg()">
@@ -1157,6 +1170,70 @@ HTML = r'''<!DOCTYPE html>
     </div>
     {% endif %}
 
+    {% for n in range(mova_stream_count) %}
+    <!-- ── MOVA Stream {{ n }} ── -->
+    <div id="panel-mova-{{n}}" class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:15px;font-weight:600;color:#111827">MOVA — Stream {{n}}</span>
+          <span id="mova-status-{{n}}" style="padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#e5e7eb;color:#6b7280">—</span>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="ad-btn admin-only" id="mova-btn-on-{{n}}" onclick="movaCmdOn({{n}})" style="background:#15803d;color:#fff;min-width:90px">⚡ MOVA ON</button>
+          <button class="ad-btn admin-only" onclick="movaCmdReset({{n}})" style="background:#b45309;color:#fff">♻ Reset</button>
+          <button class="ad-btn" onclick="movaShowDatasetLoader({{n}})">📂 Dataset</button>
+          <button class="ad-btn" onclick="movaToggleIOMap({{n}})">🗺 I/O Map</button>
+          <button class="ad-btn" onclick="movaPopout({{n}})">⬡ Pop out</button>
+        </div>
+      </div>
+
+      <!-- Diagnostics row -->
+      <div class="cards-row cards-4" style="margin-bottom:12px">
+        <div class="metric-card"><div class="metric-label">CS / DS / NS</div><div class="metric-val" id="mova-cs-{{n}}">—</div></div>
+        <div class="metric-card"><div class="metric-label">WC / EC</div><div class="metric-val" id="mova-wc-{{n}}">—</div></div>
+        <div class="metric-card"><div class="metric-label">CRB / ON_CTRL</div><div class="metric-val" id="mova-crb-{{n}}">—</div></div>
+        <div class="metric-card"><div class="metric-label">PM / Plan</div><div class="metric-val" id="mova-pm-{{n}}">—</div></div>
+      </div>
+
+      <!-- Dataset -->
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:12px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span class="section-title">Dataset</span>
+          <span id="mova-kernel-ver-{{n}}" style="font-size:11px;color:#6b7280"></span>
+        </div>
+        <div id="mova-dataset-{{n}}" style="color:#6b7280;font-size:12px;margin-top:6px">No dataset loaded</div>
+        <div id="mova-dataset-loader-{{n}}" style="display:none;margin-top:10px">
+          <div id="mova-ds-list-{{n}}" style="margin-bottom:8px"></div>
+          <input type="file" accept=".mxds" onchange="movaUploadDataset({{n}},this)" style="font-size:11px">
+        </div>
+      </div>
+
+      <!-- IO state -->
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:12px;margin-bottom:12px">
+        <div class="section-title" style="margin-bottom:8px">IO State</div>
+        <div id="mova-io-{{n}}" style="font-size:12px;color:#374151;font-family:'Courier New',monospace">—</div>
+      </div>
+
+      <!-- I/O Map editor -->
+      <div id="mova-iomap-{{n}}" style="display:none;background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:12px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <span class="section-title">Signal Map — Stream {{n}}</span>
+          <div style="display:flex;gap:6px">
+            <button class="ad-btn admin-only" onclick="movaSaveIOMap({{n}})" style="background:#2563eb;color:#fff">Save</button>
+            <button class="ad-btn" onclick="document.getElementById('mova-iomap-{{n}}').style.display='none'">✕ Close</button>
+          </div>
+        </div>
+        <div id="mova-iomap-content-{{n}}"></div>
+      </div>
+
+      <!-- Recent messages -->
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:12px">
+        <div class="section-title" style="margin-bottom:8px">Recent Kernel Messages</div>
+        <div id="mova-msgs-{{n}}" style="font-size:11px;font-family:'Courier New',monospace;color:#374151;min-height:60px">—</div>
+      </div>
+    </div>
+    {% endfor %}
+
   </div>
 </div>
 
@@ -1506,6 +1583,10 @@ function applyUpdate(data) {
     el.textContent = lim ? `MEM: ${rss}/${lim} MB` : `MEM: ${rss} MB`;
     const pct = lim ? rss / lim : 0;
     el.className = 'pill ' + (pct > 0.8 ? 'pill-err' : pct > 0.5 ? 'pill-warn' : 'pill-ok');
+  }
+  if (data.mova !== undefined) {
+    state.mova = data.mova;
+    applyMovaUpdate(data.mova);
   }
 }
 
@@ -3268,6 +3349,181 @@ function saveSiteName() {
 // ── Init ──────────────────────────────────────────────────────────────────────
 buildUG405Tables();
 
+// ── MOVA streams ─────────────────────────────────────────────────────────────
+const PM_LABELS = {0:'CONT_IG',1:'START_IG',2:'ABS_MIN',3:'VAR_MIN',
+                   4:'CHK_ENDSAT',5:'DELAY_STOPS',7:'MAX_GREEN',8:'WAIT_CHG'};
+const MOVA_COLOURS = {
+  ON_CONTROL:'#15803d', WARMUP:'#b45309', NO_CRB:'#b91c1c',
+  FAILED_RESTART:'#b91c1c', OFF:'#6b7280', NOT_STARTED:'#6b7280',
+  NO_DATASET:'#6b7280', INIT:'#b45309', INITIAL:'#b45309',
+};
+
+function applyMovaUpdate(streams) {
+  if (!Array.isArray(streams)) return;
+  streams.forEach(s => {
+    const n = s.stream;
+    if (n === undefined) return;
+    const buf = s.buffers || {}, io = buf.io || [], status = s.status || '—';
+    const col = MOVA_COLOURS[status] || '#6b7280';
+    let el;
+
+    // Sidebar pill
+    el = document.getElementById('mova-pill-' + n);
+    if (el) { el.textContent = s.connected ? status.replace(/_/g,' ') : 'OFF'; el.style.background = s.connected ? col : '#374151'; el.style.color='#fff'; }
+
+    // Status badge
+    el = document.getElementById('mova-status-' + n);
+    if (el) { el.textContent = status.replace(/_/g,' '); el.style.background = col+'22'; el.style.color = col; }
+
+    // Diagnostics
+    const cs = buf.kernel_current_stage ?? '—', ds = buf.kernel_demanded_stage ?? '—', ns = buf.kernel_next_stage ?? '—';
+    const wc = buf.warmup_counter ?? '—', ec = io.length>16 ? io[16] : '—';
+    const crb = buf.crb, onc = io.length>19 ? io[19] : '—', mon = io.length>27 ? io[27] : '—';
+    const pm = buf.prog_marker ?? '—', plan = s.active_plan || '—';
+
+    el = document.getElementById('mova-cs-' + n);  if (el) el.textContent = cs+' / '+ds+' / '+ns;
+    el = document.getElementById('mova-wc-' + n);  if (el) { el.textContent = 'WC:'+wc+'  EC:'+ec; el.style.color = ec > 0 ? '#b91c1c' : '#111827'; }
+    el = document.getElementById('mova-crb-' + n); if (el) { el.textContent = (crb?'✓ CRB':'✗ CRB')+' / '+(onc?'✓ ON':'✗ ON'); el.style.color = (crb&&onc)?'#15803d':'#b91c1c'; }
+    el = document.getElementById('mova-pm-' + n);  if (el) el.textContent = (PM_LABELS[pm]||pm)+' / P'+plan;
+
+    // MOVA ON button
+    el = document.getElementById('mova-btn-on-' + n);
+    if (el) { el.textContent = mon ? '⚡ MOVA OFF' : '⚡ MOVA ON'; el.style.background = mon ? '#374151' : '#15803d'; }
+
+    // Kernel version
+    el = document.getElementById('mova-kernel-ver-' + n);
+    if (el && s.kernel_version) el.textContent = 'Kernel: ' + s.kernel_version;
+
+    // Dataset info
+    el = document.getElementById('mova-dataset-' + n);
+    if (el) {
+      const d = s.dataset;
+      if (d) { el.innerHTML = `<strong>${d.title||d.stream_id_str}</strong> &nbsp;·&nbsp; ${d.stages} stages &nbsp;·&nbsp; ${d.filename}`; el.style.color='#111827'; }
+      else   { el.textContent = 'No dataset loaded'; el.style.color='#6b7280'; }
+    }
+
+    // IO state
+    el = document.getElementById('mova-io-' + n);
+    if (el) {
+      const ios = s.io_state || {};
+      const forces = (ios.forces||[]).map((v,i)=>v?'F'+(i+1):null).filter(Boolean);
+      const dets   = (ios.detectors||[]).filter(v=>v).length;
+      const confs  = (ios.confirms||[]).filter(v=>v).length;
+      el.innerHTML = `Forces: <b>${forces.length?forces.join(' '):'none'}</b>&nbsp;|&nbsp;`
+                   + `Dets active: <b>${dets}</b>&nbsp;|&nbsp;`
+                   + `Confirms: <b>${confs}</b>&nbsp;|&nbsp;`
+                   + `IO: ${ios.type||'—'}${ios.connected===false?' <span style="color:#b91c1c">DISC</span>':''}`;
+    }
+
+    // Recent messages
+    el = document.getElementById('mova-msgs-' + n);
+    if (el && s.recent_msgs) {
+      el.innerHTML = s.recent_msgs.length
+        ? s.recent_msgs.map(m=>`<div>${m.desc||''}</div>`).join('')
+        : '<span style="color:#6b7280">No messages yet</span>';
+    }
+  });
+}
+
+function showMova(n, navEl) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(ni => ni.classList.remove('active'));
+  const p = document.getElementById('panel-mova-' + n);
+  if (p) p.classList.add('active');
+  if (navEl) navEl.classList.add('active');
+  loadMovaDatasets(n);
+}
+
+function movaCmdOn(n) {
+  const s = (state.mova||[])[n] || {};
+  const io = (s.buffers||{}).io || [];
+  const cur = io.length > 27 ? io[27] : 0;
+  movaCmd(n, 'SET_IO', ['27', cur ? '0' : '1']);
+}
+function movaCmdReset(n) {
+  if (!confirm('Reset stream ' + n + '? This clears EC and restarts the kernel.')) return;
+  movaCmd(n, 'RESET', []);
+}
+function movaCmd(n, cmd, args) {
+  return fetch('/api/mova/stream/'+n+'/cmd', {method:'POST',
+    headers:{'Content-Type':'application/json'}, body:JSON.stringify({cmd,args})})
+    .then(r=>r.json());
+}
+function movaPopout(n) {
+  window.open('/mova/stream/'+n,'mova_stream_'+n,'width=1200,height=900,resizable=yes,scrollbars=yes');
+}
+
+// I/O Map
+function movaToggleIOMap(n) {
+  const el = document.getElementById('mova-iomap-' + n);
+  if (!el) return;
+  if (el.style.display === 'none') { el.style.display=''; loadMovaIOMap(n); } else el.style.display='none';
+}
+function loadMovaIOMap(n) {
+  fetch('/api/mova/stream/'+n+'/io_map').then(r=>r.json()).then(data => {
+    const el = document.getElementById('mova-iomap-content-'+n); if (!el) return;
+    const io = data.io || {};
+    const row = (label,key,val,attr) =>
+      `<tr><td style="padding:3px 8px;color:#6b7280;width:130px">${label}</td>`+
+      `<td><input ${attr}="${key}" value="${val||''}" style="width:200px;font-family:monospace;font-size:11px;`+
+      `padding:2px 4px;border:1px solid #d1d5db;border-radius:3px"></td></tr>`;
+    let html = '<table style="width:100%;border-collapse:collapse">';
+    html += row('CRB','crb',io.crb,'data-key');
+    html += row('TO','to',io.to,'data-key');
+    html += row('HI','hi',io.hi,'data-key');
+    html += row('SYNC','sync',io.sync,'data-key');
+    Object.entries(io.det_map||{}).sort((a,b)=>+a[0]-+b[0]).forEach(([k,v]) => html += row('Det '+(+k+1),k,v,'data-det'));
+    Object.entries(io.confirm_map||{}).sort((a,b)=>+a[0]-+b[0]).forEach(([k,v]) => html += row('Confirm '+(+k+1),k,v,'data-conf'));
+    Object.entries(io.force_map||{}).sort((a,b)=>+a[0]-+b[0]).forEach(([k,v]) => html += row('Force '+(+k+1),k,v,'data-force'));
+    html += '</table>';
+    el.innerHTML = html;
+  });
+}
+function movaSaveIOMap(n) {
+  const el = document.getElementById('mova-iomap-content-'+n); if (!el) return;
+  const io = {det_map:{},confirm_map:{},force_map:{}};
+  el.querySelectorAll('input').forEach(inp => {
+    const v = inp.value.trim();
+    if (inp.dataset.key)   io[inp.dataset.key]=v;
+    if (inp.dataset.det)   io.det_map[inp.dataset.det]=v;
+    if (inp.dataset.conf)  io.confirm_map[inp.dataset.conf]=v;
+    if (inp.dataset.force) io.force_map[inp.dataset.force]=v;
+  });
+  fetch('/api/mova/stream/'+n+'/io_map',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({io})})
+    .then(r=>r.json()).then(d=>{ if(d.ok) document.getElementById('mova-iomap-'+n).style.display='none'; else alert('Save failed: '+d.err); });
+}
+
+// Dataset
+function movaShowDatasetLoader(n) {
+  const el = document.getElementById('mova-dataset-loader-'+n); if (!el) return;
+  if (el.style.display==='none') { el.style.display=''; loadMovaDatasets(n); } else el.style.display='none';
+}
+function loadMovaDatasets(n) {
+  const el = document.getElementById('mova-ds-list-'+n); if (!el) return;
+  fetch('/api/mova/datasets').then(r=>r.json()).then(files => {
+    el.innerHTML = files.length
+      ? files.map(f=>`<a href="#" onclick="movaPickDataset(${n},'${f.path}');return false" `+
+          `style="display:block;margin-bottom:3px;color:#2563eb;font-size:11px">${f.name}</a>`).join('')
+      : '<span style="color:#6b7280;font-size:11px">No datasets found</span>';
+  });
+}
+function movaPickDataset(n, path) {
+  fetch('/api/mova/dataset_streams',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path})})
+    .then(r=>r.json()).then(d => {
+      if (!d.ok) { alert('Parse error: '+d.err); return; }
+      const sid = d.streams.length===1 ? d.streams[0]
+        : prompt('Select controller stream:\n'+d.streams.join('\n'), d.streams[0]);
+      if (!sid) return;
+      movaCmd(n,'LOAD',[path,sid]).then(r=>{ if(!r.ok) alert('Load failed: '+r.err); else document.getElementById('mova-dataset-loader-'+n).style.display='none'; });
+    });
+}
+function movaUploadDataset(n, inp) {
+  if (!inp.files.length) return;
+  const fd = new FormData(); fd.append('file', inp.files[0]);
+  fetch('/api/mova/upload_dataset',{method:'POST',body:fd}).then(r=>r.json())
+    .then(d=>{ if(d.ok) movaPickDataset(n,d.path); else alert('Upload failed: '+d.err); });
+}
+
 const es = new EventSource('/stream');
 es.onmessage = e => applyUpdate(JSON.parse(e.data));
 es.onerror   = () => {
@@ -3280,6 +3536,41 @@ es.onerror   = () => {
 '''
 
 _PAGE_TEMPLATE = app.jinja_env.from_string(HTML)
+
+
+# ── MOVA snapshot helpers ─────────────────────────────────────────────────────
+
+def _mova_snapshot(n: int) -> dict:
+    if _kernel_registry is None:
+        return {"stream": n, "connected": False}
+    client = _kernel_registry.get(n)
+    if client is None:
+        return {"stream": n, "connected": False}
+    snap = client.latest_snapshot()
+    if not snap:
+        return {"stream": n, "connected": client.connected}
+    buf = snap.get("buffers", {})
+    msgs = []
+    try:
+        msgs = list(client.all_messages())[-5:]
+    except Exception:
+        pass
+    return {
+        "stream":         n,
+        "connected":      client.connected,
+        "status":         snap.get("status", {}).get("current"),
+        "buffers":        buf,
+        "io_state":       snap.get("io", {}),
+        "dataset":        snap.get("dataset"),
+        "running":        snap.get("running", False),
+        "active_plan":    snap.get("active_plan"),
+        "kernel_version": snap.get("kernel_version"),
+        "recent_msgs":    msgs,
+    }
+
+
+def _mova_all_snapshots() -> list:
+    return [_mova_snapshot(n) for n in range(_mova_stream_count)]
 
 # ── Mapping JSON builder ───────────────────────────────────────────────────────
 
@@ -3443,6 +3734,10 @@ def _build_full_state():
     # Offline plan
     if _offline_plan:
         payload['offplan'] = _offplan_snapshot()
+
+    # MOVA streams
+    if _kernel_registry and _mova_stream_count > 0:
+        payload['mova'] = _mova_all_snapshots()
 
     # Status pills
     payload['status_pills'] = _build_pills()
@@ -3611,6 +3906,8 @@ def _poll_loop():
                 payload['autodim'] = _autodim_snapshot()
             if _offline_plan:
                 payload['offplan'] = _offplan_snapshot()
+            if _kernel_registry and _mova_stream_count > 0:
+                payload['mova'] = _mova_all_snapshots()
             payload['lastupdate']    = time.strftime('%H:%M:%S')
             payload['mem_rss']       = _read_rss_mb()
             payload['mem_limit']     = _mem_limit_mb
@@ -3635,6 +3932,7 @@ def _render_page():
         username=u['username'],
         role=u['role'],
         is_admin=(u['role'] == 'admin'),
+        mova_stream_count=_mova_stream_count,
     )
 
 
@@ -4871,13 +5169,109 @@ def api_ug405_scns_post():
 
 # ── Startup ───────────────────────────────────────────────────────────────────
 
+# ── MOVA API routes ───────────────────────────────────────────────────────────
+
+@app.route('/mova/stream/<int:n>')
+def mova_stream_page(n):
+    return _render_page()
+
+
+@app.route('/api/mova/stream/<int:n>/cmd', methods=['POST'])
+def mova_cmd(n):
+    if _kernel_registry is None:
+        return {'ok': False, 'err': 'no kernel registry'}
+    data = request.get_json(force=True)
+    cmd  = data.get('cmd', '')
+    args = data.get('args', [])
+    client = _kernel_registry.get(n)
+    if client is None:
+        return {'ok': False, 'err': f'stream {n} not found'}
+    resp = client.send_command(cmd, *args)
+    return resp
+
+
+@app.route('/api/mova/stream/<int:n>/io_map', methods=['GET'])
+def mova_get_io_map(n):
+    import sys, os as _os
+    try:
+        mc_root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+        if mc_root not in sys.path:
+            sys.path.insert(0, mc_root)
+        from pci_mova.kernel_main import _load_streams_json
+        cfg = _load_streams_json()
+        return {'ok': True, 'io': cfg.get(str(n), {}).get('io', {})}
+    except Exception as exc:
+        return {'ok': False, 'err': str(exc)}
+
+
+@app.route('/api/mova/stream/<int:n>/io_map', methods=['POST'])
+def mova_save_io_map(n):
+    import sys, os as _os
+    try:
+        mc_root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+        if mc_root not in sys.path:
+            sys.path.insert(0, mc_root)
+        from pci_mova.kernel_main import _save_streams_json
+        data = request.get_json(force=True)
+        _save_streams_json({str(n): {'io': data.get('io', {})}})
+        return {'ok': True}
+    except Exception as exc:
+        return {'ok': False, 'err': str(exc)}
+
+
+@app.route('/api/mova/datasets', methods=['GET'])
+def mova_datasets():
+    import glob as _glob, os as _os
+    ds_dir = _mova_datasets_dir
+    if not ds_dir or not _os.path.isdir(ds_dir):
+        return []
+    files = sorted(_glob.glob(_os.path.join(ds_dir, '*.mxds')))
+    return [{'name': _os.path.basename(f), 'path': f} for f in files]
+
+
+@app.route('/api/mova/dataset_streams', methods=['POST'])
+def mova_dataset_streams():
+    """Parse a .mxds file and return the available controller stream IDs."""
+    import sys, os as _os
+    try:
+        mc_root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+        if mc_root not in sys.path:
+            sys.path.insert(0, mc_root)
+        from pci_mova.dataset.parser import load_all
+        data = request.get_json(force=True)
+        path = data.get('path', '')
+        if not _os.path.isfile(path):
+            return {'ok': False, 'err': 'file not found'}
+        streams = load_all(path)
+        return {'ok': True, 'streams': list(streams.keys())}
+    except Exception as exc:
+        return {'ok': False, 'err': str(exc)}
+
+
+@app.route('/api/mova/upload_dataset', methods=['POST'])
+def mova_upload_dataset():
+    import os as _os
+    ds_dir = _mova_datasets_dir
+    if not ds_dir:
+        return {'ok': False, 'err': 'datasets directory not configured'}
+    f = request.files.get('file')
+    if not f or not f.filename.endswith('.mxds'):
+        return {'ok': False, 'err': 'no .mxds file'}
+    dest = _os.path.join(ds_dir, _os.path.basename(f.filename))
+    f.save(dest)
+    return {'ok': True, 'path': dest}
+
+
 def start_web(port=12007, _io_bus=None, _mapping=None, _live_cfg=None,
               _op_mode_ref=None, _rtig=None, _conditioner=None,
               _flir_driver=None, _agd_driver=None, _autodim_driver=None,
               _offline_plan_drv=None,
-              _mem_limit=0, _xkop=None, _rpdb=None, **kwargs):
+              _mem_limit=0, _xkop=None, _rpdb=None,
+              _mova_registry=None, _mova_count=0, _mova_ds_dir=None,
+              **kwargs):
     global _io, _ug405_cfg, _live, _op_mode, _rtig_svc, _cond, _flir, _agd, _autodim, \
-           _mem_limit_mb, _xkop_driver, _rpdb_driver, _offline_plan
+           _mem_limit_mb, _xkop_driver, _rpdb_driver, _offline_plan, \
+           _kernel_registry, _mova_stream_count, _mova_datasets_dir
 
     if _io_bus           is not None: _io           = _io_bus
     if _mapping          is not None: _ug405_cfg    = _mapping
@@ -4892,6 +5286,14 @@ def start_web(port=12007, _io_bus=None, _mapping=None, _live_cfg=None,
     if _xkop             is not None: _xkop_driver  = _xkop
     if _rpdb             is not None: _rpdb_driver  = _rpdb
     _mem_limit_mb = _mem_limit
+    if _mova_registry is not None:
+        _kernel_registry  = _mova_registry
+        _mova_stream_count = _mova_count
+        if _mova_registry and _mova_count > 0:
+            _mova_registry.start_all()
+            log.info('MOVA registry started — %d streams', _mova_count)
+    if _mova_ds_dir is not None:
+        _mova_datasets_dir = _mova_ds_dir
 
     _auth.init_db()
     if _auth.needs_setup():
