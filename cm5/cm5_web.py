@@ -309,8 +309,7 @@ HTML = r'''<!DOCTYPE html>
   .mova-bit-dot.on    { background:#15803d; border-color:#15803d; box-shadow:0 0 3px rgba(21,128,61,.4); }
   .mova-bit-dot.amber { background:#b45309; border-color:#b45309; }
   .mova-bit-dot.red   { background:#b91c1c; border-color:#b91c1c; box-shadow:0 0 3px rgba(185,28,28,.4); }
-  .mova-bit-dot.cyan  { background:#0891b2; border-color:#0891b2; box-shadow:0 0 3px rgba(8,145,178,.4); animation:mova-sync-pulse .5s ease-in-out infinite alternate; }
-  @keyframes mova-sync-pulse { from{opacity:1;box-shadow:0 0 3px rgba(8,145,178,.4)} to{opacity:.35;box-shadow:0 0 8px rgba(8,145,178,.9)} }
+  .mova-bit-dot.cyan  { background:#0891b2; border-color:#0891b2; box-shadow:0 0 4px rgba(8,145,178,.6); }
   .mova-fault-item    { padding:4px 10px; background:#fee2e2; border:1px solid #fca5a5; border-radius:3px; font-family:"Courier New",monospace; font-size:11px; color:#991b1b; margin-bottom:3px; }
   .mova-ctrl-row      { display:flex; gap:6px; padding:10px 16px; border-top:1px solid #e5e7eb; background:#f9fafb; flex-wrap:wrap; align-items:center; }
   .mova-btn           { padding:5px 14px; border:1px solid #e5e7eb; border-radius:4px; background:#fff; color:#111827; font-family:"Courier New",monospace; font-size:11px; cursor:pointer; transition:all .15s; text-transform:uppercase; font-weight:500; white-space:nowrap; }
