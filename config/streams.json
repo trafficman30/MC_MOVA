@@ -1,14 +1,46 @@
 {
-  "_comment": "Per-stream IO signal mapping. Auto-generated from dataset on LOAD, edit for non-standard wiring.",
-  "_schema": {
-    "type":         "cm5 | xkop | simulated",
-    "socket":       "/tmp/cm5_iobus.sock",
-    "det_map":      {"<mova_det_0based>": "<iobus_signal>"},
-    "confirm_map":  {"<confirm_0based>":  "<iobus_signal>"},
-    "crb":          "<iobus_signal>",
-    "force_map":    {"<force_0based>":    "<iobus_signal>"},
-    "to":           "<iobus_signal>",
-    "hi":           "<iobus_signal>",
-    "sync":         "<iobus_signal>"
+  "0": {
+    "io": {
+      "type": "cm5",
+      "det_map": {
+        "1": "xkop.i.102",
+        "0": "xkop.i.101",
+        "2": "xkop.i.103",
+        "3": "xkop.i.104",
+        "5": "xkop.i.106",
+        "4": "xkop.i.105",
+        "9": "xkop.i.110",
+        "10": "xkop.i.111",
+        "7": "xkop.i.108",
+        "8": "xkop.i.109",
+        "11": "xkop.i.112",
+        "13": "xkop.i.114",
+        "14": "xkop.i.115",
+        "15": "xkop.i.116",
+        "16": "xkop.i.117",
+        "17": "xkop.i.118",
+        "6": "xkop.i.107",
+        "12": "xkop.i.113",
+        "18": "xkop.i.119",
+        "19": "xkop.i.120",
+        "63": "xkop.i.164"
+      },
+      "confirm_map": {
+        "0": "xkop.i.1",
+        "1": "xkop.i.2",
+        "2": "xkop.i.3",
+        "3": "xkop.i.4"
+      },
+      "crb": "xkop.i.32",
+      "force_map": {
+        "0": "xkop.o.1",
+        "1": "xkop.o.2",
+        "2": "xkop.o.3",
+        "3": "xkop.o.4"
+      },
+      "to": "xkop.o.11",
+      "hi": "xkop.o.12",
+      "sync": "xkop.o.13"
+    }
   }
 }

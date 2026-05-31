@@ -274,6 +274,52 @@ HTML = r'''<!DOCTYPE html>
   .log-search    { padding: 4px 10px; border: 1px solid #d1d5db; border-radius: 5px;
                    font-size: 12px; flex: 1; min-width: 120px; }
   .log-search:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 2px #e0e7ff; }
+
+  /* ── MOVA stream card CSS (matches /opt/MOVA design) ───────────────────── */
+  .mova-card          { background:#fff; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; transition:border-color .2s; margin-bottom:12px; }
+  .mova-card.active   { border-color:#00d4ff; }
+  .mova-card.warmup   { border-color:#b45309; }
+  .mova-card.fault    { border-color:#b91c1c; }
+  .mova-card-hdr      { padding:8px 16px; background:#1a2744; display:flex; align-items:center; justify-content:space-between; }
+  .mova-card-title    { font-family:"Courier New",monospace; font-size:13px; font-weight:600; color:#fff; letter-spacing:.06em; }
+  .mova-status-badge  { font-size:10px; font-weight:600; padding:2px 10px; border-radius:20px; white-space:nowrap; letter-spacing:.04em; font-family:"Courier New",monospace; }
+  .mova-badge-control { background:#d1fae5; color:#065f46; }
+  .mova-badge-warmup  { background:#fef3c7; color:#92400e; }
+  .mova-badge-off     { background:rgba(255,255,255,.15); color:rgba(255,255,255,.6); }
+  .mova-badge-fault   { background:#fee2e2; color:#991b1b; }
+  .mova-badge-other   { background:#f0f9ff; color:#0369a1; }
+  .mova-status-row    { display:flex; border-bottom:1px solid #e5e7eb; background:#fff; flex-wrap:wrap; }
+  .mova-status-cell   { padding:7px 14px; border-right:1px solid #e5e7eb; flex-shrink:0; }
+  .mova-status-cell:last-child { border-right:none; flex:1; }
+  .mova-slabel        { font-family:"Courier New",monospace; font-size:9px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:#6b7280; margin-bottom:3px; }
+  .mova-sval          { font-family:"Courier New",monospace; font-size:12px; font-weight:600; color:#111827; display:flex; align-items:center; gap:6px; }
+  .mova-sval.on       { color:#15803d; }
+  .mova-sval.off      { color:#6b7280; }
+  .mova-sval.warn     { color:#b45309; }
+  .mova-sval.err      { color:#b91c1c; }
+  .mova-crb-dot       { width:10px; height:10px; border-radius:50%; background:#d1d5db; flex-shrink:0; transition:all .2s; }
+  .mova-crb-dot.on    { background:#15803d; box-shadow:0 0 6px rgba(21,128,61,.4); }
+  .mova-sec-hdr       { padding:4px 16px; background:#f9fafb; border-top:1px solid #e5e7eb; font-family:"Courier New",monospace; font-size:9px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#6b7280; }
+  .mova-sec-body      { padding:8px 16px; }
+  .mova-bit-grid      { display:flex; flex-wrap:wrap; row-gap:6px; }
+  .mova-bit-group     { display:flex; margin-right:14px; }
+  .mova-bit-cell      { display:flex; flex-direction:column; align-items:center; gap:2px; padding:0 3px; }
+  .mova-bit-num       { font-family:"Courier New",monospace; font-size:9px; color:#6b7280; line-height:1; }
+  .mova-bit-dot       { width:12px; height:12px; border-radius:50%; background:#d1d5db; border:1px solid #9ca3af; transition:all .1s; }
+  .mova-bit-dot.on    { background:#15803d; border-color:#15803d; box-shadow:0 0 3px rgba(21,128,61,.4); }
+  .mova-bit-dot.amber { background:#b45309; border-color:#b45309; }
+  .mova-bit-dot.red   { background:#b91c1c; border-color:#b91c1c; box-shadow:0 0 3px rgba(185,28,28,.4); }
+  .mova-bit-dot.cyan  { background:#0891b2; border-color:#0891b2; box-shadow:0 0 3px rgba(8,145,178,.4); }
+  .mova-fault-item    { padding:4px 10px; background:#fee2e2; border:1px solid #fca5a5; border-radius:3px; font-family:"Courier New",monospace; font-size:11px; color:#991b1b; margin-bottom:3px; }
+  .mova-ctrl-row      { display:flex; gap:6px; padding:10px 16px; border-top:1px solid #e5e7eb; background:#f9fafb; flex-wrap:wrap; align-items:center; }
+  .mova-btn           { padding:5px 14px; border:1px solid #e5e7eb; border-radius:4px; background:#fff; color:#111827; font-family:"Courier New",monospace; font-size:11px; cursor:pointer; transition:all .15s; text-transform:uppercase; font-weight:500; white-space:nowrap; }
+  .mova-btn:hover             { background:#f9fafb; border-color:#9ca3af; }
+  .mova-btn.mova-on-btn:hover { background:#d1fae5; border-color:#6ee7b7; color:#065f46; }
+  .mova-btn.mova-off-btn      { background:#374151; color:#fff; border-color:#374151; }
+  .mova-btn.mova-off-btn:hover{ background:#1f2937; }
+  .mova-btn.mova-reset-btn:hover { background:#fef3c7; border-color:#fcd34d; color:#92400e; }
+  .mova-btn.mova-log-btn      { color:#6b7280; font-size:10px; }
+  .mova-btn.mova-log-btn:hover{ background:#eff6ff; border-color:#93c5fd; color:#2563eb; }
 </style>
 </head>
 <body>
@@ -333,7 +379,7 @@ HTML = r'''<!DOCTYPE html>
     <div class="nav-group-label">MOVA</div>
     {% for n in range(mova_stream_count) %}
     <div class="nav-item" id="nav-mova-{{n}}" onclick="showMova({{n}},this)">
-      <span class="nav-icon">🚦</span> Stream {{n}}
+      <span class="nav-icon">🚦</span> Stream {{n+1}}
       <span id="mova-pill-{{n}}" style="margin-left:auto;font-size:9px;padding:1px 5px;border-radius:8px;background:#374151;color:#9ca3af">—</span>
     </div>
     {% endfor %}
@@ -1171,65 +1217,113 @@ HTML = r'''<!DOCTYPE html>
     {% endif %}
 
     {% for n in range(mova_stream_count) %}
-    <!-- ── MOVA Stream {{ n }} ── -->
-    <div id="panel-mova-{{n}}" class="panel">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:15px;font-weight:600;color:#111827">MOVA — Stream {{n}}</span>
-          <span id="mova-status-{{n}}" style="padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#e5e7eb;color:#6b7280">—</span>
-        </div>
-        <div style="display:flex;gap:6px">
-          <button class="ad-btn admin-only" id="mova-btn-on-{{n}}" onclick="movaCmdOn({{n}})" style="background:#15803d;color:#fff;min-width:90px">⚡ MOVA ON</button>
-          <button class="ad-btn admin-only" onclick="movaCmdReset({{n}})" style="background:#b45309;color:#fff">♻ Reset</button>
-          <button class="ad-btn" onclick="movaShowDatasetLoader({{n}})">📂 Dataset</button>
-          <button class="ad-btn" onclick="movaToggleIOMap({{n}})">🗺 I/O Map</button>
-          <button class="ad-btn" onclick="movaPopout({{n}})">⬡ Pop out</button>
-        </div>
-      </div>
+    <!-- ── MOVA Stream {{ n+1 }} ── -->
+    <div id="panel-mova-{{n}}" class="panel" style="padding:0;background:#f0f2f5;border:none">
+      <div class="mova-card" id="mova-card-{{n}}">
 
-      <!-- Diagnostics row -->
-      <div class="cards-row cards-4" style="margin-bottom:12px">
-        <div class="metric-card"><div class="metric-label">CS / DS / NS</div><div class="metric-val" id="mova-cs-{{n}}">—</div></div>
-        <div class="metric-card"><div class="metric-label">WC / EC</div><div class="metric-val" id="mova-wc-{{n}}">—</div></div>
-        <div class="metric-card"><div class="metric-label">CRB / ON_CTRL</div><div class="metric-val" id="mova-crb-{{n}}">—</div></div>
-        <div class="metric-card"><div class="metric-label">PM / Plan</div><div class="metric-val" id="mova-pm-{{n}}">—</div></div>
-      </div>
-
-      <!-- Dataset -->
-      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:12px;margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span class="section-title">Dataset</span>
-          <span id="mova-kernel-ver-{{n}}" style="font-size:11px;color:#6b7280"></span>
-        </div>
-        <div id="mova-dataset-{{n}}" style="color:#6b7280;font-size:12px;margin-top:6px">No dataset loaded</div>
-        <div id="mova-dataset-loader-{{n}}" style="display:none;margin-top:10px">
-          <div id="mova-ds-list-{{n}}" style="margin-bottom:8px"></div>
-          <input type="file" accept=".mxds" onchange="movaUploadDataset({{n}},this)" style="font-size:11px">
-        </div>
-      </div>
-
-      <!-- IO state -->
-      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:12px;margin-bottom:12px">
-        <div class="section-title" style="margin-bottom:8px">IO State</div>
-        <div id="mova-io-{{n}}" style="font-size:12px;color:#374151;font-family:'Courier New',monospace">—</div>
-      </div>
-
-      <!-- I/O Map editor -->
-      <div id="mova-iomap-{{n}}" style="display:none;background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:12px;margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <span class="section-title">Signal Map — Stream {{n}}</span>
-          <div style="display:flex;gap:6px">
-            <button class="ad-btn admin-only" onclick="movaSaveIOMap({{n}})" style="background:#2563eb;color:#fff">Save</button>
-            <button class="ad-btn" onclick="document.getElementById('mova-iomap-{{n}}').style.display='none'">✕ Close</button>
+        <!-- Card header -->
+        <div class="mova-card-hdr">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="mova-card-title">STREAM {{n+1}}</span>
+            <span style="font-family:'Courier New',monospace;font-size:10px;color:rgba(255,255,255,.45)">DATASET:&nbsp;<span id="mova-ds-title-{{n}}" style="color:rgba(255,255,255,.8)">—</span></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span id="mova-kver-{{n}}" style="font-family:'Courier New',monospace;font-size:9px;color:rgba(255,255,255,.35)"></span>
+            <span class="mova-status-badge mova-badge-off" id="mova-badge-{{n}}">—</span>
           </div>
         </div>
-        <div id="mova-iomap-content-{{n}}"></div>
-      </div>
 
-      <!-- Recent messages -->
-      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:12px">
-        <div class="section-title" style="margin-bottom:8px">Recent Kernel Messages</div>
-        <div id="mova-msgs-{{n}}" style="font-size:11px;font-family:'Courier New',monospace;color:#374151;min-height:60px">—</div>
+        <!-- Status row 1: CRB / ON_CONTROL / MOVA_ENABLED / ERROR_COUNT / WARMUP -->
+        <div class="mova-status-row">
+          <div class="mova-status-cell">
+            <div class="mova-slabel">CRB</div>
+            <div class="mova-sval off" id="mova-crb-val-{{n}}"><div class="mova-crb-dot" id="mova-crb-dot-{{n}}"></div>NOT READY</div>
+          </div>
+          <div class="mova-status-cell">
+            <div class="mova-slabel">On Control</div>
+            <div class="mova-sval off" id="mova-onctrl-{{n}}">NO</div>
+          </div>
+          <div class="mova-status-cell">
+            <div class="mova-slabel">MOVA Enabled</div>
+            <div class="mova-sval off" id="mova-en-{{n}}">NO</div>
+          </div>
+          <div class="mova-status-cell">
+            <div class="mova-slabel">Error Count</div>
+            <div class="mova-sval" id="mova-ec-{{n}}">0</div>
+          </div>
+          <div class="mova-status-cell" style="flex:1">
+            <div class="mova-slabel">Warmup</div>
+            <div class="mova-sval off" id="mova-wc-{{n}}">—</div>
+          </div>
+        </div>
+
+        <!-- Status row 2: kernel diagnostics -->
+        <div class="mova-status-row" style="font-size:.82em">
+          <div class="mova-status-cell"><div class="mova-slabel" title="Programme Marker">PM</div><div class="mova-sval" id="mova-pm-{{n}}">—</div></div>
+          <div class="mova-status-cell"><div class="mova-slabel" title="Current Stage">CS</div><div class="mova-sval" id="mova-cs-{{n}}">—</div></div>
+          <div class="mova-status-cell"><div class="mova-slabel" title="Demanded Stage">DS</div><div class="mova-sval" id="mova-ds-{{n}}">—</div></div>
+          <div class="mova-status-cell"><div class="mova-slabel" title="Next Stage">NS</div><div class="mova-sval" id="mova-ns-{{n}}">—</div></div>
+          <div class="mova-status-cell"><div class="mova-slabel" title="Wait Stage Change Timer (tenths/s)">WaitT</div><div class="mova-sval" id="mova-wt-{{n}}">—</div></div>
+          <div class="mova-status-cell"><div class="mova-slabel" title="Kernel in Warmup">WU</div><div class="mova-sval" id="mova-wu-{{n}}">—</div></div>
+          <div class="mova-status-cell"><div class="mova-slabel" title="CI_start_scan count">SCAN</div><div class="mova-sval" id="mova-scan-{{n}}">—</div></div>
+          <div class="mova-status-cell"><div class="mova-slabel">TIME</div><div class="mova-sval" id="mova-time-{{n}}" style="font-family:'Courier New',monospace">—</div></div>
+          <div class="mova-status-cell" style="flex:1"><div class="mova-slabel">DATE</div><div class="mova-sval" id="mova-date-{{n}}" style="font-family:'Courier New',monospace">—</div></div>
+        </div>
+
+        <!-- Detectors -->
+        <div class="mova-sec-hdr">Detectors</div>
+        <div class="mova-sec-body"><div class="mova-bit-grid" id="mova-dets-{{n}}"></div></div>
+
+        <!-- Confirms -->
+        <div class="mova-sec-hdr">Confirms</div>
+        <div class="mova-sec-body"><div class="mova-bit-grid" id="mova-confs-{{n}}"></div></div>
+
+        <!-- Forces -->
+        <div class="mova-sec-hdr">Force Bits</div>
+        <div class="mova-sec-body">
+          <div class="mova-bit-grid">
+            <div class="mova-bit-group" id="mova-forces-{{n}}"></div>
+            <div class="mova-bit-group" style="margin-left:14px;border-left:1px solid #e5e7eb;padding-left:14px">
+              <div class="mova-bit-cell"><div class="mova-bit-num">HI</div><div class="mova-bit-dot" id="mova-hi-{{n}}"></div></div>
+              <div class="mova-bit-cell"><div class="mova-bit-num">TO</div><div class="mova-bit-dot" id="mova-to-{{n}}"></div></div>
+              <div class="mova-bit-cell"><div class="mova-bit-num">SYNC</div><div class="mova-bit-dot cyan" id="mova-sync-{{n}}"></div></div>
+              <div class="mova-bit-cell"><div class="mova-bit-num">FLT</div><div class="mova-bit-dot" id="mova-flt-{{n}}"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Faults -->
+        <div id="mova-faults-{{n}}"></div>
+
+        <!-- I/O Map editor (hidden) -->
+        <div id="mova-iomap-{{n}}" style="display:none">
+          <div class="mova-sec-hdr" style="display:flex;justify-content:space-between;align-items:center">
+            <span>Signal Map — Stream {{n+1}}</span>
+            <div style="display:flex;gap:6px">
+              <button class="mova-btn admin-only" onclick="movaSaveIOMap({{n}})" style="background:#2563eb;color:#fff;padding:2px 10px">Save</button>
+              <button class="mova-btn" onclick="document.getElementById('mova-iomap-{{n}}').style.display='none'" style="padding:2px 8px">✕</button>
+            </div>
+          </div>
+          <div class="mova-sec-body" id="mova-iomap-content-{{n}}"></div>
+        </div>
+
+        <!-- Dataset loader (hidden) -->
+        <div id="mova-dataset-loader-{{n}}" style="display:none">
+          <div class="mova-sec-hdr">Load Dataset — Stream {{n+1}}</div>
+          <div class="mova-sec-body">
+            <div id="mova-ds-list-{{n}}" style="margin-bottom:8px"></div>
+            <input type="file" accept=".mxds" onchange="movaUploadDataset({{n}},this)" style="font-size:11px">
+          </div>
+        </div>
+
+        <!-- Controls row -->
+        <div class="mova-ctrl-row">
+          <button class="mova-btn mova-on-btn admin-only" id="mova-btn-on-{{n}}" onclick="movaCmdOn({{n}})">⚡ MOVA ON</button>
+          <button class="mova-btn mova-reset-btn admin-only" onclick="movaCmdReset({{n}})">Reset</button>
+          <button class="mova-btn" onclick="movaShowDatasetLoader({{n}})">Dataset</button>
+          <button class="mova-btn" onclick="movaToggleIOMap({{n}})">I/O Map</button>
+          <button class="mova-btn mova-log-btn" onclick="movaPopout({{n}})">⬡ Pop out</button>
+        </div>
       </div>
     </div>
     {% endfor %}
@@ -3358,69 +3452,150 @@ const MOVA_COLOURS = {
   NO_DATASET:'#6b7280', INIT:'#b45309', INITIAL:'#b45309',
 };
 
+const PM_LABELS_SHORT = {0:'CONT_IG',1:'START_IG',2:'ABS_MIN',3:'VAR_MIN',4:'CHK_ENDSAT',5:'DELAY_STOPS',7:'MAX_GREEN!',8:'WAIT_CHG'};
+
+function _scls(status) {
+  const s = (status||'').toUpperCase();
+  if (s==='ON_CONTROL')                           return 'control';
+  if (s==='WARMUP')                               return 'warmup';
+  if (s==='OFF'||s==='NOT_STARTED')               return 'off';
+  if (s==='NO_CRB'||s==='FAILED_RESTART'||s==='MULTI_CONFIRMS') return 'fault';
+  if (s==='NO_DATASET'||s==='NO_LICENCE')         return 'nodata';
+  return 'other';
+}
+
+function _movaSetBits(container_id, values, cls_on) {
+  const c = document.getElementById(container_id);
+  if (!c) return;
+  if (!c._built || c._built !== values.length) {
+    c.innerHTML = '';
+    const grp = document.createElement('div'); grp.className = 'mova-bit-group';
+    values.forEach((v,i) => {
+      const cell = document.createElement('div'); cell.className = 'mova-bit-cell';
+      cell.innerHTML = `<div class="mova-bit-num">${i+1}</div><div class="mova-bit-dot" id="${container_id}-bit-${i}"></div>`;
+      grp.appendChild(cell);
+    });
+    c.appendChild(grp);
+    c._built = values.length;
+  }
+  values.forEach((v,i) => {
+    const dot = document.getElementById(`${container_id}-bit-${i}`);
+    if (dot) dot.className = 'mova-bit-dot' + (v ? ' ' + (cls_on||'on') : '');
+  });
+}
+
 function applyMovaUpdate(streams) {
   if (!Array.isArray(streams)) return;
   streams.forEach(s => {
     const n = s.stream;
     if (n === undefined) return;
-    const buf = s.buffers || {}, io = buf.io || [], status = s.status || '—';
-    const col = MOVA_COLOURS[status] || '#6b7280';
+    const buf = s.buffers || {}, io_arr = buf.io || [], status = s.status || '—';
+    const ios = s.io_state || {};
+    const sc = _scls(status);
     let el;
+
+    // Card border class
+    const card = document.getElementById('mova-card-' + n);
+    if (card) card.className = 'mova-card' + (sc==='fault'?' fault':sc==='warmup'?' warmup':sc==='control'?' active':'');
 
     // Sidebar pill
     el = document.getElementById('mova-pill-' + n);
-    if (el) { el.textContent = s.connected ? status.replace(/_/g,' ') : 'OFF'; el.style.background = s.connected ? col : '#374151'; el.style.color='#fff'; }
+    if (el) {
+      const lbl = s.connected ? status.replace(/_/g,' ') : 'OFF';
+      const bg  = s.connected ? (MOVA_COLOURS[status]||'#6b7280') : '#374151';
+      el.textContent = lbl; el.style.background = bg; el.style.color = '#fff';
+    }
 
     // Status badge
-    el = document.getElementById('mova-status-' + n);
-    if (el) { el.textContent = status.replace(/_/g,' '); el.style.background = col+'22'; el.style.color = col; }
+    el = document.getElementById('mova-badge-' + n);
+    if (el) { el.textContent = status.replace(/_/g,' '); el.className = 'mova-status-badge mova-badge-'+sc; }
 
-    // Diagnostics
+    // Dataset in header
+    el = document.getElementById('mova-ds-title-' + n);
+    if (el) el.textContent = s.dataset ? (s.dataset.title||s.dataset.stream_id_str||'—') : '—';
+
+    // Kernel version
+    el = document.getElementById('mova-kver-' + n);
+    if (el && s.kernel_version) el.textContent = s.kernel_version;
+
+    const ec  = io_arr.length>16 ? io_arr[16] : 0;
+    const onc = io_arr.length>19 ? io_arr[19] : 0;
+    const mon = io_arr.length>27 ? io_arr[27] : 0;
+    const crb = buf.crb;
+    const wc  = buf.warmup_counter ?? -1;
+    const wu  = buf.kernel_in_warmup;
+
+    // CRB
+    el = document.getElementById('mova-crb-dot-' + n); if (el) el.className = 'mova-crb-dot'+(crb?' on':'');
+    el = document.getElementById('mova-crb-val-' + n);
+    if (el) { el.textContent = crb ? 'READY' : 'NOT READY'; el.className = 'mova-sval '+(crb?'on':'off'); }
+
+    // ON_CONTROL
+    el = document.getElementById('mova-onctrl-' + n);
+    if (el) { el.textContent = onc ? 'YES' : 'NO'; el.className = 'mova-sval '+(onc?'on':'off'); }
+
+    // MOVA Enabled
+    el = document.getElementById('mova-en-' + n);
+    if (el) { el.textContent = mon ? 'YES' : 'NO'; el.className = 'mova-sval '+(mon?'on':'off'); }
+
+    // Error count
+    el = document.getElementById('mova-ec-' + n);
+    if (el) { el.textContent = ec; el.className = 'mova-sval '+(ec>0?'err':''); }
+
+    // Warmup counter
+    el = document.getElementById('mova-wc-' + n);
+    if (el) { el.textContent = wc<0?'—':'WC:'+wc+(buf.kernel_stages?' / '+buf.kernel_stages:''); el.className = 'mova-sval '+(wu?'warn':''); }
+
+    // Diagnostic row
     const cs = buf.kernel_current_stage ?? '—', ds = buf.kernel_demanded_stage ?? '—', ns = buf.kernel_next_stage ?? '—';
-    const wc = buf.warmup_counter ?? '—', ec = io.length>16 ? io[16] : '—';
-    const crb = buf.crb, onc = io.length>19 ? io[19] : '—', mon = io.length>27 ? io[27] : '—';
-    const pm = buf.prog_marker ?? '—', plan = s.active_plan || '—';
-
-    el = document.getElementById('mova-cs-' + n);  if (el) el.textContent = cs+' / '+ds+' / '+ns;
-    el = document.getElementById('mova-wc-' + n);  if (el) { el.textContent = 'WC:'+wc+'  EC:'+ec; el.style.color = ec > 0 ? '#b91c1c' : '#111827'; }
-    el = document.getElementById('mova-crb-' + n); if (el) { el.textContent = (crb?'✓ CRB':'✗ CRB')+' / '+(onc?'✓ ON':'✗ ON'); el.style.color = (crb&&onc)?'#15803d':'#b91c1c'; }
-    el = document.getElementById('mova-pm-' + n);  if (el) el.textContent = (PM_LABELS[pm]||pm)+' / P'+plan;
+    const pm = buf.prog_marker, wt = buf.wait_stage_change_timer;
+    const scan = io_arr.length>63 ? io_arr[63] : '—';
+    el = document.getElementById('mova-pm-' + n);   if (el) el.textContent = pm!==undefined ? (PM_LABELS_SHORT[pm]||pm) : '—';
+    el = document.getElementById('mova-cs-' + n);   if (el) el.textContent = cs;
+    el = document.getElementById('mova-ds-' + n);   if (el) el.textContent = ds;
+    el = document.getElementById('mova-ns-' + n);   if (el) el.textContent = ns;
+    el = document.getElementById('mova-wt-' + n);   if (el) el.textContent = wt!==undefined ? wt : '—';
+    el = document.getElementById('mova-wu-' + n);   if (el) { el.textContent = wu?'YES':'NO'; el.className='mova-sval '+(wu?'warn':''); }
+    el = document.getElementById('mova-scan-' + n); if (el) el.textContent = scan;
+    el = document.getElementById('mova-time-' + n); if (el) el.textContent = s.server_time || '—';
+    el = document.getElementById('mova-date-' + n); if (el) el.textContent = s.server_date || '—';
 
     // MOVA ON button
     el = document.getElementById('mova-btn-on-' + n);
-    if (el) { el.textContent = mon ? '⚡ MOVA OFF' : '⚡ MOVA ON'; el.style.background = mon ? '#374151' : '#15803d'; }
+    if (el) { el.textContent = mon ? '⚡ MOVA OFF' : '⚡ MOVA ON'; el.className = 'mova-btn admin-only ' + (mon?'mova-off-btn':'mova-on-btn'); }
 
-    // Kernel version
-    el = document.getElementById('mova-kernel-ver-' + n);
-    if (el && s.kernel_version) el.textContent = 'Kernel: ' + s.kernel_version;
+    // Bit grids
+    _movaSetBits('mova-dets-' + n,  ios.detectors||[], 'on');
+    _movaSetBits('mova-confs-' + n, ios.confirms||[], 'on');
 
-    // Dataset info
-    el = document.getElementById('mova-dataset-' + n);
-    if (el) {
-      const d = s.dataset;
-      if (d) { el.innerHTML = `<strong>${d.title||d.stream_id_str}</strong> &nbsp;·&nbsp; ${d.stages} stages &nbsp;·&nbsp; ${d.filename}`; el.style.color='#111827'; }
-      else   { el.textContent = 'No dataset loaded'; el.style.color='#6b7280'; }
+    // Forces
+    const forces = ios.forces||[];
+    const fg = document.getElementById('mova-forces-' + n);
+    if (fg) {
+      if (!fg._built || fg._built !== forces.length) {
+        fg.innerHTML = '';
+        forces.forEach((v,i) => {
+          fg.innerHTML += `<div class="mova-bit-cell"><div class="mova-bit-num">${i+1}</div><div class="mova-bit-dot" id="mova-f-${n}-${i}"></div></div>`;
+        });
+        fg._built = forces.length;
+      }
+      forces.forEach((v,i) => { const d=document.getElementById(`mova-f-${n}-${i}`); if(d) d.className='mova-bit-dot'+(v?' amber':''); });
     }
 
-    // IO state
-    el = document.getElementById('mova-io-' + n);
-    if (el) {
-      const ios = s.io_state || {};
-      const forces = (ios.forces||[]).map((v,i)=>v?'F'+(i+1):null).filter(Boolean);
-      const dets   = (ios.detectors||[]).filter(v=>v).length;
-      const confs  = (ios.confirms||[]).filter(v=>v).length;
-      el.innerHTML = `Forces: <b>${forces.length?forces.join(' '):'none'}</b>&nbsp;|&nbsp;`
-                   + `Dets active: <b>${dets}</b>&nbsp;|&nbsp;`
-                   + `Confirms: <b>${confs}</b>&nbsp;|&nbsp;`
-                   + `IO: ${ios.type||'—'}${ios.connected===false?' <span style="color:#b91c1c">DISC</span>':''}`;
-    }
+    // HI / TO / SYNC / FLT
+    const dout = buf.dout || {};
+    const setBit = (id, on, cls) => { const d=document.getElementById(id); if(d) d.className='mova-bit-dot'+(on?' '+(cls||'on'):''); };
+    setBit('mova-hi-'+n,   ios.hi,   'on');
+    setBit('mova-to-'+n,   ios.to,   'amber');
+    setBit('mova-sync-'+n, ios.sync, 'cyan');
+    setBit('mova-flt-'+n,  ios.mova_fault||ios.det_fault, 'red');
 
-    // Recent messages
-    el = document.getElementById('mova-msgs-' + n);
-    if (el && s.recent_msgs) {
-      el.innerHTML = s.recent_msgs.length
-        ? s.recent_msgs.map(m=>`<div>${m.desc||''}</div>`).join('')
-        : '<span style="color:#6b7280">No messages yet</span>';
+    // Faults
+    el = document.getElementById('mova-faults-' + n);
+    if (el && s.active_faults) {
+      el.innerHTML = s.active_faults.length
+        ? s.active_faults.map(f=>`<div class="mova-fault-item">${f.label||f.error_id||f}</div>`).join('')
+        : '';
     }
   });
 }
@@ -3565,6 +3740,9 @@ def _mova_snapshot(n: int) -> dict:
         "running":        snap.get("running", False),
         "active_plan":    snap.get("active_plan"),
         "kernel_version": snap.get("kernel_version"),
+        "server_time":    snap.get("server_time"),
+        "server_date":    snap.get("server_date"),
+        "active_faults":  snap.get("active_faults", []),
         "recent_msgs":    msgs,
     }
 

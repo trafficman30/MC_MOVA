@@ -12,7 +12,8 @@ import threading
 import time
 
 # ── Root path — works on Linux, Windows, anywhere ────────────────────────────
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT    = os.path.dirname(os.path.abspath(__file__))
+MC_ROOT = os.path.dirname(ROOT)   # /opt/MC_MOVA — for pci_mova imports
 
 # Add core to path so all modules can import from it
 sys.path.insert(0, os.path.join(ROOT, 'core'))
@@ -20,6 +21,9 @@ sys.path.insert(0, os.path.join(ROOT, 'io'))
 sys.path.insert(0, os.path.join(ROOT, 'ug405'))
 sys.path.insert(0, os.path.join(ROOT, 'rtig'))
 sys.path.insert(0, os.path.join(ROOT, 'conditioner'))
+# pci_mova package (MOVA kernel IPC client)
+if MC_ROOT not in sys.path:
+    sys.path.insert(0, MC_ROOT)
 from config  import load_platform, load_ug405, load_rtig, load_conditioner, load_rpdb
 from io_bus  import IOBus
 
@@ -282,10 +286,23 @@ def main():
             offline_plan_svc.start()
             log.info("Offline plan service started  file=%s", plan_path)
 
+    # ── MOVA kernel registry — connects to IPC sockets of running kernel procs ──
+    mova_registry = None
+    mova_streams  = int(services.get('mova_streams', '0'))
+    mova_ds_dir   = os.path.join(MC_ROOT, 'pci_mova', 'datasets')
+    if mova_streams > 0:
+        try:
+            from pci_mova.ipc.client import KernelRegistry
+            mova_registry = KernelRegistry(stream_count=mova_streams)
+            log.info("MOVA registry created — %d streams", mova_streams)
+        except Exception as exc:
+            log.warning("MOVA registry init failed: %s", exc)
+
     # ── Start web dashboard (always, regardless of UG405) ────────────────────
+    web_port = int(services.get('web_port', '12008'))
     if services.get('web', 'enabled') == 'enabled':
         from cm5_web import start_web
-        start_web(12007,
+        start_web(web_port,
                   _io_bus           = io,
                   _mapping          = {'scns':    ug405_cfg['scns'],
                                        'control': ug405_cfg['control'],
@@ -300,7 +317,10 @@ def main():
                   _offline_plan_drv = offline_plan_svc,
                   _mem_limit        = mem_limit,
                   _xkop             = xkop_driver,
-                  _rpdb             = rpdb_driver)
+                  _rpdb             = rpdb_driver,
+                  _mova_registry    = mova_registry,
+                  _mova_count       = mova_streams,
+                  _mova_ds_dir      = mova_ds_dir)
 
     if svc:
         svc.start()   # blocks on SNMP dispatcher
