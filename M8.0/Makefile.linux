@@ -1,0 +1,150 @@
+# Makefile.linux
+# Builds libmova.so for x86_64 Linux (Debian/Ubuntu)
+#
+# Usage:
+#   Copy this file to C:\srm2\PYTHON\MOVA\source\M8.0\ on Windows,
+#   then transfer the whole M8.0 folder to CT103 (or any Linux x86 machine)
+#   and run:
+#       sudo apt install gcc libxml2-dev
+#       make -f Makefile.linux
+#
+#   Output: libmova.so  (copy to /opt/CM5/mova/libmova.so)
+#
+# Dependency: libxml2 (for XML dataset loading)
+#   sudo apt install libxml2-dev
+#
+# The MI_* functions from mova_api.h are the public interface.
+# Exported symbols:
+#   MI_set_detector_status
+#   MI_set_detectors_status
+#   MI_set_detectors_status_from_ports
+#   MI_set_stages_confirmation
+#   MI_set_stages_confirmation_from_ports
+#   MI_set_crb_bit
+#   MI_set_input_scan_call
+#   MI_set_output_scan_call
+#   MI_set_read_rtc_call
+#   MI_get_control_bits_status
+
+CC      = gcc
+CFLAGS  = -O2 -fPIC -Wall -Wno-unused-variable -Wno-unused-function \
+          -Wno-implicit-function-declaration -Wno-int-conversion \
+          -D GCC_BUILD -D NDEBUG -D _LIB -D M8_ENABLED \
+          -D PC_WRAPPER \
+          -D M8_SPEC_COND \
+          -D _PLUTO \
+          -D _CRT_SECURE_NO_DEPRECATE
+
+INCLUDES = -I. -I./kernel \
+           -I./MVComms \
+           -I./MVUtils \
+           -I./SiemensDummyFiles \
+           -I./Externals/headers/libxml2-2.9.2
+
+LDFLAGS  = -shared -Wl,-soname,libmova.so -Wl,--allow-multiple-definition
+LIBS     = -lxml2 -lm
+
+# ── Output ────────────────────────────────────────────────────────────────────
+OUTPUT   = libmova.so
+OBJDIR   = build/obj
+
+# ── Source files ──────────────────────────────────────────────────────────────
+
+# Kernel sources
+KERNEL_SRCS = \
+    kernel/algorithms_manager.c \
+    kernel/calculate_bonus_green_time.c \
+    kernel/calculate_reduced_lost_time.c \
+    kernel/calculate_short_cycle_control_params.c \
+    kernel/capacity_maximisation.c \
+    kernel/delay_and_stops_optimiser.c \
+    kernel/estimate_queues_size.c \
+    kernel/estimate_right_turners_count_during_opposed_stage.c \
+    kernel/detectors_handler.c \
+    kernel/junction_handler.c \
+    kernel/lanes_endsat_handler.c \
+    kernel/lanes_handler.c \
+    kernel/links_endsat_handler.c \
+    kernel/links_ep_handler.c \
+    kernel/links_handler.c \
+    kernel/stages_codes_handler.c \
+    kernel/stages_ep_handler.c \
+    kernel/stages_handler.c \
+    kernel/messages_manager.c \
+    kernel/sf.c \
+    kernel/sfdepen.c \
+    kernel/sfstats.c \
+    kernel/timers_manager.c \
+    kernel/core_interface.c \
+    kernel/program_controller.c \
+    kernel/dataset_handler.c \
+    kernel/dataset_interface.c \
+    kernel/xml_dataset.c \
+    kernel/kdebug.c \
+    kernel/tma_alerts.c \
+    kernel/tma_mem.c \
+    kernel/tma_preprint.c \
+    kernel/alerts.c \
+    kernel/comms.c \
+    kernel/detscn.c \
+    kernel/display_msg.c \
+    kernel/errhand.c \
+    kernel/generalfunc.c \
+    kernel/genstg.c \
+    kernel/getentry.c \
+    kernel/monitr.c \
+    kernel/mova.c \
+    kernel/output.c \
+    kernel/spec_cond.c \
+    kernel/write.c \
+    kernel/ui_dataaccess.c
+
+# AML sources excluded — require PC-MOVA comms layer not needed for CM5
+AML_SRCS =
+
+# JSON parser
+JSMN_SRCS = jsmn-master/jsmn.c
+
+# Siemens dummy platform stubs
+DUMMY_SRCS = SiemensDummyFiles/dummydata.c
+
+# MOVA public API
+API_SRCS = mova_api.c mova_stubs.c
+
+ALL_SRCS = $(KERNEL_SRCS) $(AML_SRCS) $(JSMN_SRCS) $(DUMMY_SRCS) $(API_SRCS)
+
+# Derive object file paths
+OBJS = $(patsubst %.c,$(OBJDIR)/%.o,$(ALL_SRCS))
+
+# ── Rules ─────────────────────────────────────────────────────────────────────
+
+.PHONY: all clean check_deps
+
+all: check_deps $(OUTPUT)
+	@echo ""
+	@echo "  Built: $(OUTPUT)"
+	cp -f $(OUTPUT) /opt/MC_MOVA/pci_mova/core/kernel/libmova.so
+	@echo "  Installed: /opt/MC_MOVA/pci_mova/core/kernel/libmova.so"
+	@echo ""
+
+$(OUTPUT): $(OBJS)
+	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
+
+# Pattern rule for all C sources
+$(OBJDIR)/%.o: %.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+check_deps:
+	@which gcc > /dev/null || (echo "ERROR: gcc not found. Run: sudo apt install gcc" && exit 1)
+	@test -f /usr/include/libxml2/libxml/parser.h || (echo "ERROR: libxml2 not found. Run: sudo apt install libxml2-dev" && exit 1)
+	@echo "Dependencies OK"
+
+clean:
+	rm -rf build/
+	rm -f $(OUTPUT)
+
+# Show exported symbols after build
+symbols: $(OUTPUT)
+	@echo "Exported MI_* symbols:"
+	@nm -D $(OUTPUT) | grep " T MI_"

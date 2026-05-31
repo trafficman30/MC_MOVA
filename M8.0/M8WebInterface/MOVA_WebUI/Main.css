@@ -1,0 +1,403 @@
+﻿
+.spaceTextlg{
+     display:inline-block;
+     white-space: pre;
+     font-weight:bold;
+}
+
+.spaceTextsm{
+    display:inline-block;
+    white-space: pre;
+    font-weight:bold;
+}
+.square{
+    display: inline-block; /*this makes them go in a row*/
+    border: 1px solid #385D8A;
+    text-align:center;
+    background-color: #1F497D;
+    color: #FFFF00;
+    font-weight: bold;
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+.contentxs {font-size: 2.7vw;padding-top:0.2vw;}
+.contentsm {font-size: 2.2vw;padding-top:0.2vw;}
+.contentmd {font-size: 1.5vw;padding-top:0.2vw;}
+.contentlg {font-size: 1.0vw;padding-top:0.2vw;} /*1.4*/
+
+/*Responsive square sizes for different device screen sizes*/
+.Rmargxs,.Emargxs,.Bmargxs {
+    width: 5.3vw;
+    height: 5.3vw;
+}
+.Rmargsm,.Emargsm,.Bmargsm{
+    width:4.6vw;
+    height:4.6vw;
+}
+.Rmargmd,.Emargmd,.Bmargmd {
+    width: 3.0vw;
+    height: 3.0vw;
+}
+.Rmarglg,.Emarglg,.Bmarglg {
+    width: 2.2vw;
+    height: 2.2vw;
+}
+/*Regular sqaures not first in block nor last in block*/
+.Rmargxs,.Emargxs {margin-left: 0.3vw;}
+.Rmargsm,.Emargsm {margin-left: 0.7vw;}
+.Rmargmd,.Emargmd {margin-left: 0.3vw;}
+.Rmarglg,.Emarglg {margin-left: 0.3vw;}
+/*Last square in a row block*/
+.Emargxs {margin-right: 5.8vw;}
+.Emargsm {margin-right: 5.8vw;}
+.Emargmd {margin-right: 3.3vw;}
+.Emarglg {margin-right: 2.2vw;}
+/*First square in a row*/
+.Bmargxs { margin-left: 3.5vw;}
+.Bmargsm { margin-left: 2.0vw;}
+.Bmargmd { margin-left: 1.5vw;}
+.Bmarglg { margin-left: 1.0vw;}
+
+/* Square Row 'vw' must total or be less than 100vw (100%) to work*/
+/*Consists of:...*/
+/* container margin left/right padding left/right  for all cases below */
+/* Large (lg) 1 begin/first square margin  , 7 x 4  squares  , 7 x 4 their left margins, 7 block right margins */ /*1,  61.6 ,  8.4,  15.4    ( with container margins)  = 92.4 */
+/* Medium (md) 1 begin/first square margin , 5 x 4  squares  , 5 x 4 their left margins, 5 block right margins */ /*1.5, 60,    6,   16.4     ( with container margins)  = 90.0 */
+/* Small (sm) 1 begin/first square margin  ,3 x 4  squares  , 3 x 4 their left margins, 3 block right margins  */ /*2.0, 55.2,  8.4,  17.6     ( with container margins) = 83.2*/
+/* xSmall (xs) 1 begin/first square margin ,3 x 4  squares  , 3 x 4 their left margins, 3 block right margins  */ /*3.5, 63.6   3.6,  17.4    ( with container margins)  = 94.1 */
+
+/*Total 6vw across*/
+.container {
+    width:auto;
+    margin-left:3vw;
+    margin-right:1vw;
+    padding-left:1vw;
+    padding-right:1vw;
+}
+
+.centreInDiv
+{text-align:center;
+margin:auto;}
+
+/*.gap{
+  /*border-bottom:5px solid transparent;
+  border-top:5px solid transparent;*/
+ /* padding-top: 5px;
+}*/
+
+ /*Mova enabled and Error Count boxes*/
+.textbox {
+    /*border: 1px dotted #000000;*/
+    border: 1px solid #000000;
+    outline: 0;
+    height: 23px;
+    width: 50px; /*same width as swtiches so collapse at same time*/
+   display: inline-block;
+}
+
+
+body {
+    padding-top: 20px; /*stuff was going into header so needed padding*/
+    font-family: "Calibri";
+    padding-bottom: 70px; /* Height of the footer -adjust in footer too */
+}
+
+#footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 70px; /* Height of the footer -adjust in body too */
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 1rem;
+    background-color: #fff;
+}
+
+h3.hidden {
+    visibility: hidden;
+}
+
+.nav a {
+    color: white;
+}
+
+img {
+    height: auto;
+    max-width: 100%;
+    background-color: white;
+}
+
+.navbar-header {
+    position: relative;
+    margin-left: 100px;
+    color: white;
+    font-weight: bold;
+}
+
+.navbar {
+    background-color: #1F497D;
+    height: 65px;
+}
+
+.navbar-toggle {
+    border-color: black;
+    background-color: #F26527;
+    border-radius: 0;
+}
+
+.smallTitle {
+    font-family: inherit;
+    font-size: medium;
+}
+
+.mediumTitle {
+    font-family: inherit;
+    font-size: x-large;
+}
+
+.largeTitle {
+    font-family: inherit;
+    font-size: xx-large;
+}
+
+
+
+/*navbar set to look the same collapsed and active*/
+/* Animated example in case needed: http://julienmelissas.com/animated-x-icon-for-the-bootstrap-navbar-toggle/ */
+.navbar-toggle.collapsed .icon-bar, .navbar-toggle .icon-bar {
+    width: 42px;
+    padding-left: 0;
+    padding-right: 0;
+    background-color: black;
+    border-bottom: 5px;
+    border-top: 5px;
+    height: 3px;
+}
+
+    .navbar-toggle.collapsed .icon-bar.hiddenbar, .navbar-toggle .icon-bar.hiddenbar {
+        visibility: hidden; /*cheat to get the look!*/
+    }
+
+.navbar-fixed-top .navbar-collapse, .navbar-fixed-bottom .navbar-collapse {
+    width: 50%;
+    float: right;
+    max-width: 300px;
+}
+
+.logo {
+    padding: 15px;
+}
+
+.smallLogo {
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 23px;
+    padding-bottom: 23px;
+}
+
+#smallNav {
+    padding-left: 0px;
+    padding-right: 0px;
+    border-width: medium;
+}
+
+.navbar-nav > li > a {
+    background-color: #1f497d;
+    color: white;
+    text-align: center;
+    margin-top: -6px;
+    border-width: 3px;
+}
+
+    .navbar-nav > li > a:focus, .navbar-nav > li > a:hover {
+        background-color: #F26527;
+    }
+
+
+.navbar-brand {
+    padding-left: 10%; /*Cheat to get some centering*/
+}
+
+
+.active {
+    background-color: #FFFF00;
+    color: #1F497D;
+}
+
+.displaybox {
+    border: 1px solid #385D8A;
+    display: inline-block;
+    height: 25px;
+    width: 40px;
+    text-align: center;
+    vertical-align: middle;
+    font-weight: bold;
+    font-size: 18px;
+    display: table-cell;
+}
+
+
+
+
+/*Table Formatting*/ /*th:header cell, td:data cell*/
+
+table.satFlowLogsTable, table.errorTable, table.activeDataSetTable1 {
+    border-width: 1px;
+    border-style: solid;
+    border-color: #FAB98A;
+    border-collapse: collapse;
+    padding: 5px;
+
+    /*text-align:center; also at top of file - this is if want to centre tables
+    margin:auto;*/
+
+}
+
+
+table th.crossed {
+    height: 50px;
+  /*background: linear-gradient(to bottom left,  calc(50% - 1px), black,  #FDEFE9 calc(50% + 1px)) ;*/
+  background: linear-gradient(to bottom left, transparent  49.25%, #FAB98A 50%,  transparent 50.75%) ; /*i.e.  doesn't work properly  with calc above so used this*/
+}
+
+
+table.satFlowLogsTable th, td, table.errorTable td, table.activeDataSetTable1 th, td {
+    border-width: 1px;
+    border-style: solid;
+    border-color: #FAB98A;
+    border-collapse: collapse;
+    padding: 5px;
+}
+table.activeDataSetTable1 th, td,table.satFlowLogsTable th, td {
+    border-width: 1px;
+    font-weight: normal;
+    text-align: center;
+}
+
+
+table.errorTable tr:nth-child(odd), table.satFlowLogsTable tr:nth-child(odd),  table.activeDataSetTable1 tr:nth-child(odd) {
+    background-color: #FCDDCF;
+}
+
+table.errorTable tr:nth-child(even), table.satFlowLogsTable tr:nth-child(even),  table.activeDataSetTable1 tr:nth-child(even) {
+    background-color: #FDEFE9;
+}
+
+
+table.activeDataSetTable1 tr:nth-child(1) > th,table.satFlowLogsTable tr:nth-child(1) > th {
+    font-weight:bold; /*title*/
+    text-align: left;
+}
+
+.multiTable  {
+     border-width:2px;
+     border-style: solid;
+     border-color: #FAB98A;
+}
+.multiTable th,td{
+     border-width: 1px;
+     border-style: solid;
+     border-color: #FAB98A;
+     border-collapse: collapse;
+     padding: 5px;
+     /*font-weight: normal;*/
+   
+}
+.multiTable td {
+     text-align: center;
+}
+
+/*Multi-table*/
+.oddColor {
+    background-color: #FDEFE9;
+}
+
+/*Multi-table*/
+.evenColor {
+    background-color: #FCDDCF;
+}
+
+.subHeader {
+    font-weight:normal; 
+    text-align: center;
+}
+
+table.activeDataSetTable1  > th {text-align:center}
+
+
+table.satFlowLogsTable tr:nth-child(2) > th:nth-child(n+1) {
+    /*border-right-color: rgb(0, 0, 0);*/ 
+    text-align: center;
+    font-weight: normal;
+}
+
+table.satFlowLogsTable tr:nth-child(2) >  th:nth-child(1) {
+    /*font-weight: bold;*/ /*to be consistant with active data tables - leave in in case needs changing back*/
+}
+
+
+table.satFlowLogsTable tr:nth-child(n+3) >  th:nth-child(2), table.satFlowLogsTable tr  > td  {
+    /*border-right-color: rgb(0, 0, 0);*/ 
+    font-weight:normal;
+}
+
+
+table.satFlowLogsTable  > td {text-align:center}
+table.errorTable , table.satFlowLogsTable,table.activeDataSetTable1{
+    border-width:2px;
+}
+
+.bigTimeOffset {color:red;}
+.smallTimeOffset {color:black;}
+
+
+
+#MessagesBoxDiv
+{
+    overflow:auto;
+    white-space: nowrap;
+    border:2px solid #ccc; /*#FCDDCF;*/
+    white-space: pre;
+}
+
+.messagesBoxBig
+{
+    height:25vw; 
+    width:80vw;
+}
+
+.messagesBoxSmall
+{
+    height:75vw;  /* to show more message box for small device*/
+    width:90vw;
+}
+
+
+#warningMessage1
+{
+   font-weight:bold;
+   color:red;
+   font-size:18pt;
+
+}
+#warningMessage2
+{
+    font-weight:bold;
+    color:black;
+    font-size:18pt;
+
+}
+
+#movaVersion{
+    color:black;
+}
+
+/* The following is not supported across browsers, neither does IMG  support the pseudo 'before after' approach, jquery is another solution using pseudo but not got working therefore leave in html for now*/
+/*#logo{
+   content:url('./images/TRL_Logosmall.png');
+}
+#smallLogo{
+    content:url('./images/TRL_Logoxsmall.png');
+}*/
+

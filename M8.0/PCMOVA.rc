@@ -1,0 +1,217 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United Kingdom) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 8,0,0,435
+ PRODUCTVERSION 8,0,0,435
+ FILEFLAGSMASK 0x17L
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "080904b0"
+        BEGIN
+            VALUE "Comments", "PC version of MOVA signalised traffic junction control system"
+            VALUE "CompanyName", "TRL Limited"
+            VALUE "FileDescription", "PCMOVA Kernel Application"
+            VALUE "FileVersion", "8.0.0.435"
+            VALUE "InternalName", "PCMOVA"
+            VALUE "LegalCopyright", "(c) TRL Limited, 2017"
+            VALUE "OriginalFilename", "PCMOVA.exe"
+            VALUE "ProductName", "PCMOVA"
+            VALUE "ProductVersion", "8.0.0.435"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x809, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDS_PCMOVA_ERROR_NO_ERROR "No PCMOVA error."
+    IDS_PCMOVA_ERROR_ASSERTION_FAILURE 
+                            "PCMOVA error: a programming error occurred (assertion failure)."
+    IDS_PCMOVA_ERROR_ALREADY_INIT "PCMOVA error: already initialised."
+    IDS_PCMOVA_ERROR_OUT_OF_MEMORY "PCMOVA error: out of memory."
+    IDS_PCMOVA_ERROR_PARAM_INVALID "PCMOVA error: invalid parameter."
+    IDS_PCMOVA_ERROR_DATASET_OPEN "PCMOVA error: opening MOVA dataset file."
+    IDS_PCMOVA_ERROR_DATASET_READ "PCMOVA error: reading MOVA dataset file."
+    IDS_PCMOVA_ERROR_DATASET_FORMAT "PCMOVA error: MOVA dataset format."
+    IDS_PCMOVA_ERROR_DATASET_CLOSE "PCMOVA error: closing MOVA dataset file."
+    IDS_PCMOVA_ERROR_TASK_INIT "PCMOVA error: initialising MOVA task."
+    IDS_PCMOVA_ERROR_TASK_DEINIT "PCMOVA error: deinitialising MOVA task."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_PCMOVA_ERROR_TERMINATE "PCMOVA error: controller termination."
+    IDS_PCMOVA_ERROR_HANDSHAKE "PCMOVA error: controller handshaking."
+    IDS_PCMOVA_ERROR_INITIALISE "PCMOVA error: controller initialisation."
+    IDS_PCMOVA_ERROR_UPDATE "PCMOVA error: controller update."
+    IDS_PCMOVA_ERROR_CONTROLLER_SEND 
+                            "PCMOVA error: sending data to controller."
+    IDS_PCMOVA_ERROR_CONTROLLER_RECEIVE 
+                            "PCMOVA error: receiving data from controller."
+    IDS_PCMOVA_ERROR_USER_SEND "PCMOVA error: sending data to user."
+    IDS_PCMOVA_ERROR_USER_RECEIVE "PCMOVA error: receiving data from user."
+    IDS_PCMOVA_ERROR_MSG_CHECKSUM "PCMOVA error: controller message checksum."
+    IDS_PCMOVA_ERROR_MSG_LENGTH "PCMOVA error: controller message length."
+    IDS_PCMOVA_ERROR_MSG_START "PCMOVA error: controller message start."
+    IDS_PCMOVA_ERROR_MSG_ID "PCMOVA error: controller message ID invalid."
+    IDS_PCMOVA_ERROR_MSG_TYPE 
+                            "PCMOVA error: controller message type unexpected."
+    IDS_PCMOVA_ERROR_MSG_DATA "PCMOVA error: controller message data invalid."
+    IDS_PCMOVA_ERROR_TIME   "PCMOVA error: tried to set clock to invalid time."
+    IDS_PCMOVA_ERROR_CONTROLLER_INIT 
+                            "PCMOVA error: initialising controller communications."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_PCMOVA_ERROR_CONTROLLER_DEINIT 
+                            "PCMOVA error: deinitialising controller communications."
+    IDS_PCMOVA_ERROR_USER_INIT 
+                            "PCMOVA error: initialising user communications."
+    IDS_PCMOVA_ERROR_USER_DEINIT 
+                            "PCMOVA error: deinitialising user communications."
+    IDS_PCMOVA_ERROR_NOT_INIT "PCMOVA error: not initialised."
+    IDS_PCMOVA_ERROR_DATASET_VERSION 
+                            "PCMOVA error: dataset version invalid or unsupported."
+    IDS_PCMOVA_ERROR_DATASET_CHECKSUM 
+                            "PCMOVA error: dataset checksum incorrect (corrupt data?)."
+    IDS_KERNEL_ERROR_NO_ERROR "NO MOVA ERROR OCCURRED AT: %s."
+    IDS_KERNEL_ERROR_MOVA_BACK_ON_LINE 
+                            "MOVA BACK ON-LINE AT: %s; ERROR COUNT: %d."
+    IDS_KERNEL_ERROR_FAULTY_DETECTOR "FAULTY DETECTOR NUMBER: %d; AT: %s."
+    IDS_KERNEL_ERROR_STAGE_NOT_ENDED 
+                            "STAGE NOT ENDED: S%d; DEMANDED: S%d; OFF-LINE AT: %s; ERROR COUNT: %d."
+    IDS_KERNEL_ERROR_INTERGREEN_NOT_ENDED 
+                            "30-SECOND INTERGREEN FAILS TO END; OFF-LINE AT: %s; ERROR COUNT: %d."
+    IDS_KERNEL_ERROR_INVALID_STAGE_DEMANDED 
+                            "CHANGE FROM S%d TO S%d NOT ALLOWED; AT: %s; ERROR COUNT: %d."
+    IDS_KERNEL_ERROR_WRONG_STAGE_CONFIRMED 
+                            "WRONG STAGE RUNNING: %d; DEMANDED: %d; AT: %s; ERROR COUNT: %d."
+    IDS_KERNEL_ERROR_STAGE_STUCK_ON 
+                            "STAGE %d STUCK FOR %d MINUTES; AT: %s; ERROR COUNT: %d."
+    IDS_KERNEL_ERROR_WATCHDOG_ROUTINE "MOVA WATCHDOG AT: %s; ERROR COUNT: %d."
+    IDS_KERNEL_ERROR_CONTROLLER_READY_BIT_OFF 
+                            "CONTROLLER-READY BIT OFF AT: %s; ERROR COUNT: %d."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_KERNEL_ERROR_CONTROLLER_READY_BIT_ON 
+                            "CONTROLLER-READY BIT ON AT: %s; ERROR COUNT: %d."
+    IDS_KERNEL_ERROR_PROGRAM_ERROR "PROGRAM ERROR AT: %s; CODE: %d; RVL: %d."
+    IDS_KERNEL_ERROR_CHECKSUM_ERROR 
+                            "CHECKSUM ERROR ON RELOADING SITE DATA AT: %s."
+    IDS_KERNEL_ERROR_RELOADING_ERROR 
+                            "DATASET PLAN %d; ERROR ON RELOADING AT %s."
+    IDS_KERNEL_ERROR_MULTIPLE_STAGE_CONFIRMS 
+                            "MULTIPLE STAGE CONFIRMATIONS - MOVA STOPPED AT: %s."
+    IDS_KERNEL_ERROR_MOVA_RESTARTED "MOVA RESTARTED AT: %s."
+    IDS_KERNEL_ERROR_DIVIDE_ERROR 
+                            "PROGRAM DIVIDE ERROR AT: %s; LOCATION: %d; DATA:"
+    IDS_KERNEL_ERROR_EMPTY_REPOSITORY_AREA 
+                            "DATASET PLAN AREA: %d; EMPTY ERROR AT: %s."
+    IDS_KERNEL_ERROR_REPOSITORY_CHECKSUM 
+                            "DATASET PLAN AREA: %d; CHECKSUM ERROR AT: %s."
+    IDS_KERNEL_ERROR_DEFAULT_LOADED 
+                            "DATASET PLAN AREA: %d; DEFAULT DATASET LOADED AT: %s."
+    IDS_PCMOVA_ERROR_KERNEL_FATAL 
+                            "PCMOVA error: a fatal error occurred in the MOVA kernel; PCMOVA exiting."
+    IDS_PCMOVA_ERROR_KERNEL_USER_FATAL 
+                            "PCMOVA error: a fatal error occurred in the MOVA kernel (user communications); PCMOVA exiting."
+    IDS_PCMOVA_ERROR_TASK_SUSPEND "PCMOVA error: suspending MOVA task."
+    IDS_PCMOVA_ERROR_TASK_RESUME "PCMOVA error: resuming MOVA task."
+END
+
+#endif    // English (United Kingdom) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

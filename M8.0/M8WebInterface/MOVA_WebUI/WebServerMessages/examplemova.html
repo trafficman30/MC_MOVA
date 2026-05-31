@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>MOVA M8 Web UI</title>
+</head>
+
+<body>
+
+<h2>MOVA M8 Web UI</h2>
+
+<img src="force_bits.png" alt="Force Bits">
+
+</br></br>
+<b>MOVA Time:</b> <span id="mova_time" style="color:blue">...</span>
+</br></br>
+<b>MOVA Version:</b> <span id="mova_version">...</span>
+</br></br>
+<b>Force Bits:</b> <span id="force_bits" style="color:blue">...</span>
+</br></br>
+<b>Confirm Bits:</b> <span id="confirm_bits" style="color:blue">...</span>
+</br></br>
+<b>Operation Flags [Is MOVA Enabled]:</b> <span id="op_flags">...</span>
+</br></br>
+<b>Error Count:</b> <span id="error_count">...</span>
+</br></br>
+<b>Error (1) Detail:</b> <span id="error_detail">...</span>
+</br></br>
+<b>Detectors Status:</b> <span id="dets_status">...</span>
+</br></br>
+<b>Site Full Data:</b> <span id="site_full_data">...</span>
+</br></br>
+<b>Lanes count:</b> <span id="lanes_count">...</span>
+</br></br>
+<b>Sat Flow Data:</b> <span id="sat_flow_data">...</span>
+</br></br>
+<b>STLOST Data:</b> <span id="stlost_data">...</span>
+</br></br>
+<b>TMA Logs link:</b> <a href="" id="tma_logs_link" target="_blank">Download Link</a>
+</br></br>
+
+<button onclick="sendReqMOVATime()">Send ReqMOVATime</button>
+</br>
+<button onclick="sendReqKernelVersion()">Send ReqKernelVersion</button>
+</br>
+<button onclick="sendReqForceBits()">Send ReqForceBits</button>
+</br>
+<button onclick="sendReqConfirmBits()">Send ReqConfirmBits</button>
+</br>
+<button onclick="sendReqOperationFlags()">Send ReqOperationFlags [Is MOVA Enabled]</button>
+</br>
+<button onclick="sendReqErrorCount()">Send ReqErrorCount</button>
+</br>
+<button onclick="sendReqErrorDetail()">Send ReqErrorDetail</button>
+</br>
+<button onclick="sendReqDetectorsStatus()">Send ReqDetectorsStatus</button>
+</br>
+<button onclick="sendReqSiteFullData()">Send ReqSiteFullData</button>
+</br>
+<button onclick="sendReqLanesCount()">Send ReqLanesCount</button>
+</br>
+<button onclick="sendReqSatFlowDetails()">Send ReqSatFlowDetails</button>
+</br>
+<button onclick="sendReqSTLOST_Details()">Send ReqSTLOST_Details</button>
+</br>
+<button onclick="sendReqAllTMA_Logs()">Send ReqAllTMA_Logs</button>
+</br>
+<a href="/about.html">Go to another page</a>
+
+<script>
+
+var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance 
+
+setInterval(tick, 500);
+
+function sendJSONMessage(msg)
+{	
+	xmlhttp.open("POST", "/json-handler", true);
+	xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+	
+	xmlhttp.send(JSON.stringify(msg));	
+}
+
+
+function sendReqKernelVersion() 
+{
+	var mova_version;
+	
+	xmlhttp.onreadystatechange = function() 
+	{
+	  if (xmlhttp.readyState == 4 && xmlhttp.status == 200) 
+	  {		  
+		mova_version = JSON.parse(xmlhttp.responseText).Params.Version;
+		document.getElementById("mova_version").innerHTML = mova_version;
+	  }
+	};
+
+    sendJSONMessage({StreamID:"1", MessageType:"ReqKernelVersion"});	
+}
+
+function sendReqMOVATime() 
+{
+	var mova_time;
+
+	xmlhttp.onreadystatechange = function() 
+	{
+	  if (xmlhttp.readyState == 4 && xmlhttp.status == 200) 
+	  {
+		mova_time = JSON.parse(xmlhttp.responseText).Params.Time + "  @  " + JSON.parse(xmlhttp.responseText).Params.Date;
+		document.getElementById("mova_time").innerHTML = mova_time;
+	  }
+	};
+
+	sendJSONMessage({StreamID:"1", MessageType:"ReqMOVATime"});
+}
+
+function sendReqForceBits() 
+{
+	xmlhttp.onreadystatechange = function() 
+	{
+	  if (xmlhttp.readyState == 4 && xmlhttp.status == 200) 
+	  {	
+		document.getElementById("force_bits").innerHTML = JSON.parse(xmlhttp.responseText).Params.ForceBits;
+	  }
+	};
+
+    sendJSONMessage({StreamID:"1", MessageType:"ReqForceBits"});	
+}
+
+function sendReqConfirmBits() 
+{
+	xmlhttp.onreadystatechange = function() 
+	{
+	  if (xmlhttp.readyState == 4 && xmlhttp.status == 200) 
+	  {	
+		document.getElementById("confirm_bits").innerHTML = JSON.parse(xmlhttp.responseText).Params.ConfirmBits;
+	  }
+	};
+
+    sendJSONMessage({StreamID:"1", MessageType:"ReqConfirmBits"});	
+}
+
+function sendReqOperationFlags() 
+{
+	xmlhttp.onreadystatechange = function() 
+	{
+	  if (xmlhttp.readyState == 4 && xmlhttp.status == 200) 
+	  {	
+		document.getElementById("op_flags").innerHTML = JSON.parse(xmlhttp.responseText).Params.IsMOVAEnabled;
+	  }
+	};
+
+    sendJSONMessage({StreamID:"1", MessageType:"ReqOperationFlags"});	
+}
+
+function sendReqErrorCount() 
+{
+	xmlhttp.onreadystatechange = function() 
+	{
+	  if (xmlhttp.readyState == 4 && xmlhttp.status == 200) 
+	  {	
+		document.getElementById("error_count").innerHTML = JSON.parse(xmlhttp.responseText).Params.Count;
+	  }
+	};
+
+    sendJSONMessage({StreamID:"1", MessageType:"ReqErrorCount"});	
+}
+
+function sendReqErrorDetail() 
+{
+	xmlhttp.onreadystatechange = function() 
+	{
+	  if (xmlhttp.readyState == 4 && xmlhttp.status == 200) 
+	  {	
+		//document.getElementById("error_detail").innerHTML = JSON.parse(xmlhttp.responseText);
+		document.getElementById("error_detail").innerHTML = xmlhttp.responseText;
+	  }
+	};
+
+    sendJSONMessage({StreamID:"1", MessageType:"ReqErrorDetail", Params:{ErrorIndex:1}});	
+}
+
+function sendReqDetectorsStatus() 
+{
+	xmlhttp.onreadystatechange = function() 
+	{
+	  if (xmlhttp.readyState == 4 && xmlhttp.status == 200) 
+	  {	
+		document.getElementById("dets_status").innerHTML = JSON.parse(xmlhttp.responseText).Params.Status;
+	  }
+	};
+
+    sendJSONMessage({StreamID:"1", MessageType:"ReqDetectorsStatus"});	
+}
+
+function sendReqSiteFullData() 
+{
+	xmlhttp.onreadystatechange = function() 
+	{
+	  if (xmlhttp.readyState == 4 && xmlhttp.status == 200) 
+	  {	
+		document.getElementById("site_full_data").innerHTML = xmlhttp.responseText;
+	  }
+	};
+
+    sendJSONMessage({StreamID:"1", MessageType:"ReqSiteFullData"});	
+}
+
+function sendReqLanesCount()
+{
+	xmlhttp.onreadystatechange = function() 
+	{
+	  if (xmlhttp.readyState == 4 && xmlhttp.status == 200) 
+	  {	
+		document.getElementById("lanes_count").innerHTML = JSON.parse(xmlhttp.responseText).Params.Count;
+	  }
+	};
+	
+	sendJSONMessage({StreamID:"1", MessageType:"ReqLanesCount"});	
+}
+
+function sendReqSatFlowDetails() 
+{	    
+	xmlhttp.onreadystatechange = function() 
+	{
+	  if (xmlhttp.readyState == 4 && xmlhttp.status == 200) 
+	  {	
+		document.getElementById("sat_flow_data").innerHTML = xmlhttp.responseText;
+	  }
+	};
+
+    sendJSONMessage({StreamID:"1", MessageType:"ReqSatFlowDetails", Params:{LaneID:1, PeriodIndex:1} });	
+		
+}
+
+function sendReqSTLOST_Details() 
+{	    
+	xmlhttp.onreadystatechange = function() 
+	{
+	  if (xmlhttp.readyState == 4 && xmlhttp.status == 200) 
+	  {	
+		document.getElementById("stlost_data").innerHTML = xmlhttp.responseText;
+	  }
+	};
+
+    sendJSONMessage({StreamID:"1", MessageType:"ReqSTLOST_Details", Params:{LaneID:1, PeriodIndex:1} });
+}
+
+function sendReqAllTMA_Logs() 
+{	    
+	xmlhttp.onreadystatechange = function() 
+	{
+	  if (xmlhttp.readyState == 4 && xmlhttp.status == 200) 
+	  {	
+		document.getElementById("tma_logs_link").href = JSON.parse(xmlhttp.responseText).Params.Link;
+	  }
+	};
+
+    sendJSONMessage({StreamID:"1", MessageType:"ReqAllTMA_LogsLink"});	
+}
+
+function tick()
+{
+	//sendReqDetectorsStatus();
+	//sendReqMOVATime();
+	//sendReqForceBits();
+	//sendReqConfirmBits();
+}
+
+</script>
+
+</body>
+</html>

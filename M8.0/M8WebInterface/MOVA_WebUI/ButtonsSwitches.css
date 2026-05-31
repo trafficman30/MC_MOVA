@@ -1,0 +1,117 @@
+﻿/* Button slider  https://proto.io/freebies/onoff/  (or http://css3button.net/) */
+/*https://codegeekz.com/30-best-css3-generators-for-developers/*/
+
+.onoffswitch {
+    display:inline-block; 
+    padding-top: 0px; 
+    margin-top: 0px; 
+    position: relative; width: 50px;
+    top: 10px;
+    -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+}
+.onoffswitch-checkbox {
+    display: none;
+}
+.onoffswitch-label {
+    display: block; overflow: hidden; cursor: pointer;
+    border: 2px solid #385d8a; border-radius: 7px;
+}
+.onoffswitch-inner {
+    display: block; width: 200%; margin-left: -100%;
+    transition: margin 0.3s ease-in 0s;
+}
+.onoffswitch-inner:before, .onoffswitch-inner:after {
+    display: block; float: left; width: 50%; height: 19px; padding: 0; line-height: 19px;
+    font-size: 8px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
+    box-sizing: border-box;
+}
+.onoffswitch-inner:before {
+    content: "ON";
+    padding-left: 5px;
+    background-color: #FFFFFF; color: #000000;
+}
+.onoffswitch-inner:after {
+    content: "OFF";
+    padding-right: 5px;
+    background-color: #FFFFFF; color: #000000;
+    text-align: right;
+}
+.onoffswitch-switch {
+    display: block; width: 23px; height:23px; margin: 0px;
+    background: #b30000;
+    position: absolute; top: 0; bottom: 0;
+    right: 27px;
+    border: 2px solid #385d8a; border-radius: 7px;
+    transition: all 0.3s ease-in 0s; 
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
+    margin-left: 0;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
+    right: 0px; 
+    background-color: #00B050; 
+}
+
+
+    /*Glassy Buttons*/
+
+    /*http://enjoycss.com*/
+/*http://www.glassybuttons.com/glassy.php*/
+.glass {
+    display: inline-block;
+    -webkit-box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
+    cursor: pointer;
+    padding: 3px 25px;
+    border: 1px solid;
+    border-color: rgba(234, 85, 7, 1);
+    -webkit-border-radius: 7px;
+    border-radius: 5px;
+    font: normal 18px/bold "Calibri";
+    /*color: rgba(255,255,255,0.9);*/
+    color: #385d8a;
+    -o-text-overflow: clip;
+    text-overflow: clip;
+    background: -webkit-linear-gradient(-90deg, rgba(254,204,177,1) 0, rgba(241,116,50,1) 50%, rgba(234,85,7,1) 51%, rgba(251,149,94,1) 100%), #0199d9;
+    background: -moz-linear-gradient(180deg, rgba(254,204,177,1) 0, rgba(241,116,50,1) 50%, rgba(234,85,7,1) 51%, rgba(251,149,94,1) 100%), #0199d9;
+    background: linear-gradient(180deg, rgba(254,204,177,1) 0, rgba(241,116,50,1) 50%, rgba(234,85,7,1) 51%, rgba(251,149,94,1) 100%), #0199d9;
+    background-position: 50% 50%;
+    -webkit-background-origin: padding-box;
+    background-origin: padding-box;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
+    -webkit-background-size: auto auto;
+    background-size: auto auto;
+    -webkit-box-shadow: 5px 5px 8px 2px rgba(0,0,0,0.4), 2px 2px 2px 0 rgba(0,0,0,0.2);
+    box-shadow: 5px 5px 8px 2px rgba(0,0,0,0.4), 2px 2px 2px 0 rgba(0,0,0,0.2);
+    text-shadow: -1px -1px 0 rgba(15,73,168,0.66);
+    -webkit-transition: all 300ms cubic-bezier(0.42, 0, 0.58, 1);
+    -moz-transition: all 300ms cubic-bezier(0.42, 0, 0.58, 1);
+    -o-transition: all 300ms cubic-bezier(0.42, 0, 0.58, 1);
+    transition: all 300ms cubic-bezier(0.42, 0, 0.58, 1);
+    text-decoration: none;
+}
+
+    .glass:hover {
+        background-position: 50% 50%;
+        -webkit-background-origin: padding-box;
+        background-origin: padding-box;
+        -webkit-background-clip: border-box;
+        background-clip: border-box;
+        -webkit-background-size: auto auto;
+        background-size: auto auto;
+        text-decoration: none;
+        color: white;
+    }
+
+a.glass {
+    text-decoration: none;
+}
+
+
+.glass:active {
+    background-color: #3e8e41;
+    box-shadow: 0 5px #666;
+    transform: translateY(10px);
+}

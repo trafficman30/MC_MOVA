@@ -1,0 +1,452 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{DE74F0CF-D21A-4F8C-B895-D191A252E9AB}</ProjectGuid>
+    <RootNamespace>MOVA</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\obj\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\obj\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PCMOVA</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PCMOVA</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(WindowsSdkDir)include\shared;$(WindowsSdkDir)include\um;$(IncludePath)</IncludePath>
+    <TargetExt>.exe</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>$(WindowsSdkDir)include\shared;$(WindowsSdkDir)include\um;$(IncludePath)</IncludePath>
+    <ExcludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);$(MSBuildToolsPath32);$(VCInstallDir)atlmfc\lib;$(VCInstallDir)lib;</ExcludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>.\Externals\headers\iconv-1.9.2;.\Externals\headers\libxml2-2.9.2;.\kernel;.\MVComms;.\MVUtils;.\SiemensDummyFiles;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>M8_ENABLED;M8_REMOVE_REV_DEMAND;M8_CALL_CANCEL_TIMES_FOR_IRTGA;M8_REVERT_DELAY_TO_MAINST;M8_PREMATURE_ENDSAT;M8_RE_ESTABLISHMENT_OF_SATFLOW;M8_DET_FAULT_CHECKING_AND_LOGGING;M8_LINK_MAXIMUM;M8_IMPORVED_BUS_PRIORITY;M8_USE_OF_ALT_DOWNSTREAM_DETS;M8_USE_OF_CMOVA_OVERSAT_CHECKING;M8_UPDATE_LAMBDA_IN_PEDMAX_CYCLES;M8_LAMBDA_IN_PFACIL_EQ_4;M8_SHIFT_REGISTER_EXTENSION;M8_ADDITIONAL_SINK_DETS;M8_SPEC_COND;UNIT_TESTING;WIN32;_DEBUG;_CONSOLE;_TRACE;PC_WRAPPER;PCMOVA;_CRT_SECURE_NO_DEPRECATE;TRL_INTEGRATION_TEST;TRL_HOST_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <PreprocessToFile>false</PreprocessToFile>
+      <TreatSpecificWarningsAsErrors>4013</TreatSpecificWarningsAsErrors>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <StringPooling>
+      </StringPooling>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>.\$(Configuration)\MVComms.lib;.\$(Configuration)\MVUtils.lib;.\Externals\libs\libxml2.dll.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalLibraryDirectories>.\Externals\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>Debug</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+      <FullProgramDatabaseFile>false</FullProgramDatabaseFile>
+      <ImageHasSafeExceptionHandlers />
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /Y .\Externals\libs\*.dll  .\$(Configuration)
+xcopy "$(SolutionDir)CopyProtection\*.dll" "$(TargetDir)" /Y</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <OmitFramePointers>true</OmitFramePointers>
+      <AdditionalIncludeDirectories>WindowsSDK_IncludePath;.\Externals\headers\iconv-1.9.2;.\Externals\headers\libxml2-2.9.2;.\kernel;.\MVComms;.\MVUtils;.\SiemensDummyFiles;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>M8_ENABLED;M8_REMOVE_REV_DEMAND;M8_CALL_CANCEL_TIMES_FOR_IRTGA;M8_REVERT_DELAY_TO_MAINST;M8_PREMATURE_ENDSAT;M8_RE_ESTABLISHMENT_OF_SATFLOW;M8_DET_FAULT_CHECKING_AND_LOGGING;M8_LINK_MAXIMUM;M8_IMPORVED_BUS_PRIORITY;M8_USE_OF_ALT_DOWNSTREAM_DETS;M8_USE_OF_CMOVA_OVERSAT_CHECKING;M8_UPDATE_LAMBDA_IN_PEDMAX_CYCLES;M8_LAMBDA_IN_PFACIL_EQ_4;M8_SHIFT_REGISTER_EXTENSION;M8_ADDITIONAL_SINK_DETS;M8_SPEC_COND;WIN32;NDEBUG;_CONSOLE;_TRACE;PC_WRAPPER;PCMOVA; _CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>
+      </FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <TreatSpecificWarningsAsErrors>4013</TreatSpecificWarningsAsErrors>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>.\$(Configuration)\MVComms.lib;.\$(Configuration)\MVUtils.lib;.\Externals\libs\libxml2.dll.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /Y .\Externals\libs\*.dll  .\$(Configuration)
+xcopy "$(SolutionDir)CopyProtection\*.dll" "$(TargetDir)" /Y</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="aml_dataset_file_handler.c" />
+    <ClCompile Include="aml_generic_files_handler.c" />
+    <ClCompile Include="aml_handler.c" />
+    <ClCompile Include="aml_messages_decoder_encoder.c" />
+    <ClCompile Include="aml_messages_handler.c">
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EditAndContinue</DebugInformationFormat>
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MultiThreadedDebugDLL</RuntimeLibrary>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
+    </ClCompile>
+    <ClCompile Include="CopyProtection\ERIS.cpp">
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsManaged>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ProgramDatabase</DebugInformationFormat>
+      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</MinimalRebuild>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExceptionHandling>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MultiThreadedDebugDLL</RuntimeLibrary>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsManaged>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+    </ClCompile>
+    <ClCompile Include="CopyProtection\ExternalManagedCode\SignatureVerifier.cpp">
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsManaged>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ProgramDatabase</DebugInformationFormat>
+      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</MinimalRebuild>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExceptionHandling>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MultiThreadedDebugDLL</RuntimeLibrary>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsManaged>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+    </ClCompile>
+    <ClCompile Include="jsmn-master\jsmn.c" />
+    <ClCompile Include="kernel\alerts.c" />
+    <ClCompile Include="kernel\algorithms_manager.c" />
+    <ClCompile Include="kernel\blocka.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="kernel\blockb.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="kernel\blockc.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="kernel\blockd.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="kernel\blockp.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="kernel\calculate_bonus_green_time.c" />
+    <ClCompile Include="kernel\calculate_reduced_lost_time.c" />
+    <ClCompile Include="kernel\calculate_short_cycle_control_params.c" />
+    <ClCompile Include="kernel\capacity_maximisation.c" />
+    <ClCompile Include="kernel\core_interface.c" />
+    <ClCompile Include="kernel\dataset_handler.c" />
+    <ClCompile Include="kernel\dataset_interface.c" />
+    <ClCompile Include="kernel\delay_and_stops_optimiser.c" />
+    <ClCompile Include="kernel\detectors_handler.c" />
+    <ClCompile Include="kernel\estimate_queues_size.c" />
+    <ClCompile Include="kernel\estimate_right_turners_count_during_opposed_stage.c" />
+    <ClCompile Include="kernel\junction_handler.c" />
+    <ClCompile Include="kernel\lanes_endsat_handler.c" />
+    <ClCompile Include="kernel\lanes_handler.c" />
+    <ClCompile Include="kernel\links_endsat_handler.c" />
+    <ClCompile Include="kernel\links_ep_handler.c" />
+    <ClCompile Include="kernel\links_handler.c" />
+    <ClCompile Include="kernel\messages_manager.c" />
+    <ClCompile Include="kernel\program_controller.c" />
+    <ClCompile Include="kernel\spec_cond.c" />
+    <ClCompile Include="kernel\stages_codes_handler.c" />
+    <ClCompile Include="kernel\stages_ep_handler.c" />
+    <ClCompile Include="kernel\stages_handler.c" />
+    <ClCompile Include="kernel\timers_manager.c" />
+    <ClCompile Include="kernel\ui_dataaccesstest.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="kernel\xml_dataset.c">
+      <RuntimeTypeInfo Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </RuntimeTypeInfo>
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MultiThreadedDebugDLL</RuntimeLibrary>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </CompileAsManaged>
+    </ClCompile>
+    <ClCompile Include="Messages.c" />
+    <ClCompile Include="mova_api.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="pcclock.c" />
+    <ClCompile Include="pccontio.c" />
+    <ClCompile Include="pcdatset.c" />
+    <ClCompile Include="pcerror.c" />
+    <ClCompile Include="pcioscan.c" />
+    <ClCompile Include="pckernel.c" />
+    <ClCompile Include="PCMOVA.cpp">
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ProgramDatabase</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsManaged>
+      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</MinimalRebuild>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExceptionHandling>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MultiThreadedDLL</RuntimeLibrary>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+    </ClCompile>
+    <ClCompile Include="pctasks.c" />
+    <ClCompile Include="pcuserio.c" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="kernel\comms.c" />
+    <ClCompile Include="kernel\datahand.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="kernel\detscn.c" />
+    <ClCompile Include="kernel\display_msg.c" />
+    <ClCompile Include="kernel\errhand.c" />
+    <ClCompile Include="kernel\genstg.c" />
+    <ClCompile Include="kernel\getentry.c" />
+    <ClCompile Include="kernel\kdebug.c" />
+    <ClCompile Include="kernel\monitr.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN32;_DEBUG;_CONSOLE;_TRACE;PC_WRAPPER;PCMOVA;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN32;NDEBUG;_CONSOLE;_TRACE;PC_WRAPPER;PCMOVA; _CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="kernel\mova.c" />
+    <ClCompile Include="kernel\movadata.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="kernel\output.c" />
+    <ClCompile Include="kernel\sf.c" />
+    <ClCompile Include="kernel\sfdepen.c" />
+    <ClCompile Include="kernel\sfstats.c" />
+    <ClCompile Include="kernel\term.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="kernel\userbig.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="kernel\write.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="kernel\generalfunc.c" />
+    <ClCompile Include="kernel\tma_alerts.c" />
+    <ClCompile Include="kernel\tma_mem.c" />
+    <ClCompile Include="kernel\tma_preprint.c" />
+    <ClCompile Include="kernel\ui_dataaccess.c" />
+    <ClCompile Include="kernel\answer.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
+    </ClCompile>
+    <ClCompile Include="kernel\ioscan.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
+    </ClCompile>
+    <ClCompile Include="kernel\mova_if.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
+    </ClCompile>
+    <ClCompile Include="kernel\obclock.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
+    </ClCompile>
+    <ClCompile Include="kernel\phone.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
+    </ClCompile>
+    <ClCompile Include="SiemensDummyFiles\dummydata.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="kernel\hugemova.sa">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="aml_dataset_file_handler.h" />
+    <ClInclude Include="aml_generic_files_handler.h" />
+    <ClInclude Include="aml_handler.h" />
+    <ClInclude Include="aml_messages_decoder_encoder.h" />
+    <ClInclude Include="aml_messages_handler.h" />
+    <ClInclude Include="CopyProtection\ERIS.h" />
+    <ClInclude Include="CopyProtection\ExternalManagedCode\SignatureVerifier.h" />
+    <ClInclude Include="jsmn-master\jsmn.h" />
+    <ClInclude Include="kernel\alerts.h" />
+    <ClInclude Include="kernel\algorithms_manager.h" />
+    <ClInclude Include="kernel\calculate_bonus_green_time.h" />
+    <ClInclude Include="kernel\calculate_reduced_lost_time.h" />
+    <ClInclude Include="kernel\calculate_short_cycle_control_params.h" />
+    <ClInclude Include="kernel\capacity_maximisation.h" />
+    <ClInclude Include="kernel\core_interface.h" />
+    <ClInclude Include="kernel\dataset_handler.h" />
+    <ClInclude Include="kernel\dataset_interface.h" />
+    <ClInclude Include="kernel\delay_and_stops_optimiser.h" />
+    <ClInclude Include="kernel\detectors_handler.h" />
+    <ClInclude Include="kernel\display_msg.h" />
+    <ClInclude Include="kernel\dynamic_data.h" />
+    <ClInclude Include="kernel\estimate_queues_size.h" />
+    <ClInclude Include="kernel\estimate_right_turners_count_during_opposed_stage.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="kernel\junction_handler.h" />
+    <ClInclude Include="kernel\lanes_endsat_handler.h" />
+    <ClInclude Include="kernel\lanes_handler.h" />
+    <ClInclude Include="kernel\links_endsat_handler.h" />
+    <ClInclude Include="kernel\links_ep_handler.h" />
+    <ClInclude Include="kernel\links_handler.h" />
+    <ClInclude Include="kernel\messages_manager.h" />
+    <ClInclude Include="kernel\mova_constants.h" />
+    <ClInclude Include="kernel\mova_dataset.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="kernel\mova_types.h" />
+    <ClInclude Include="kernel\program_controller.h" />
+    <ClInclude Include="kernel\repository.h" />
+    <ClInclude Include="kernel\spec_cond.h" />
+    <ClInclude Include="kernel\stages_codes_handler.h" />
+    <ClInclude Include="kernel\stages_ep_handler.h" />
+    <ClInclude Include="kernel\stages_handler.h" />
+    <ClInclude Include="kernel\timers_manager.h" />
+    <ClInclude Include="kernel\ui_dataaccesstest.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="kernel\xml_dataset.h" />
+    <ClInclude Include="Messages.h" />
+    <ClInclude Include="mova_api.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="MsgTypes.h" />
+    <ClInclude Include="pcclock.h" />
+    <ClInclude Include="pccontio.h" />
+    <ClInclude Include="pcdatset.h" />
+    <ClInclude Include="pcerror.h" />
+    <ClInclude Include="pcioscan.h" />
+    <ClInclude Include="pckernel.h" />
+    <ClInclude Include="pctasks.h" />
+    <ClInclude Include="pctypes.h" />
+    <ClInclude Include="pcuserio.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="kernel\datahand.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="kernel\errhand.h" />
+    <ClInclude Include="kernel\gbltypes.h" />
+    <ClInclude Include="kernel\getentry.h" />
+    <ClInclude Include="kernel\kdebug.h" />
+    <ClInclude Include="kernel\kdebugsettings.h" />
+    <ClInclude Include="kernel\mova.h" />
+    <ClInclude Include="kernel\mova_op.h" />
+    <ClInclude Include="kernel\obclock.h" />
+    <ClInclude Include="kernel\select.h" />
+    <ClInclude Include="kernel\sf.h" />
+    <ClInclude Include="kernel\sfdebug.h" />
+    <ClInclude Include="kernel\sfdepen.h" />
+    <ClInclude Include="kernel\sfmath.h" />
+    <ClInclude Include="kernel\sfprv.h" />
+    <ClInclude Include="kernel\sfstats.h" />
+    <ClInclude Include="kernel\sfstatsprv.h" />
+    <ClInclude Include="kernel\sftst.h" />
+    <ClInclude Include="kernel\sftstprv.h" />
+    <ClInclude Include="kernel\sftypes.h" />
+    <ClInclude Include="kernel\write.h" />
+    <ClInclude Include="kernel\defines.h" />
+    <ClInclude Include="kernel\generalfunc.h" />
+    <ClInclude Include="kernel\tma_alerts.h" />
+    <ClInclude Include="kernel\tma_mem.h" />
+    <ClInclude Include="kernel\tma_preprint.h" />
+    <ClInclude Include="kernel\tma_strc.h" />
+    <ClInclude Include="kernel\ui_dataaccess.h" />
+    <ClInclude Include="SiemensDummyFiles\base_types.h" />
+    <ClInclude Include="SiemensDummyFiles\diff_bss.h" />
+    <ClInclude Include="SiemensDummyFiles\error.h" />
+    <ClInclude Include="SiemensDummyFiles\hardware.h" />
+    <ClInclude Include="SiemensDummyFiles\inpoup.h" />
+    <ClInclude Include="SiemensDummyFiles\keptdata.h" />
+    <ClInclude Include="SiemensDummyFiles\licence.h" />
+    <ClInclude Include="SiemensDummyFiles\nu_omu.h" />
+    <ClInclude Include="SiemensDummyFiles\nucleus.h" />
+    <ClInclude Include="SiemensDummyFiles\proj_def.h" />
+    <ClInclude Include="SiemensDummyFiles\uart_int.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PCMOVA.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="MVComms\MVComms.vcxproj">
+      <Project>{ee7eb35c-3726-46de-91eb-dfbff5d60eb1}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="MVUtils\MVUtils.vcxproj">
+      <Project>{2210ba9d-4aca-40f9-af64-8310272c7f1c}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

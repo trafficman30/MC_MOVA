@@ -6,3 +6,5 @@ __pycache__/
 /tmp/mova_*.sock
 pci_mova/datasets/.stream_state_*.json
 pci_mova/logs/
+M8.0/build/
+M8.0/*.so

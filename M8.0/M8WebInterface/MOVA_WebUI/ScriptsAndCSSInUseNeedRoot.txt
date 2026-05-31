@@ -1,0 +1,3 @@
+For use when interfacing with the webserver. 
+So those in use are at root level. 
+Extra Bootstrap and JQueryFiles are archived in Folders in case needed later.

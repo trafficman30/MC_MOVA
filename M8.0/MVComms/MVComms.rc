@@ -1,0 +1,170 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.K.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,0
+ PRODUCTVERSION 1,0,0,0
+ FILEFLAGSMASK 0x17L
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "080904b0"
+        BEGIN
+            VALUE "Comments", "Communication functionality for PCMOVA Kernel and MOVA Comm"
+            VALUE "CompanyName", "TRL Limited"
+            VALUE "FileDescription", "MOVA Communications Component"
+            VALUE "FileVersion", "1, 0, 0, 0"
+            VALUE "InternalName", "MVComms"
+            VALUE "LegalCopyright", "TRL Limited 2006"
+            VALUE "OriginalFilename", "MVComms.dll"
+            VALUE "ProductName", "PCMOVA and MOVA Comm"
+            VALUE "ProductVersion", "1, 0, 0, 0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x809, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_COMMS_ERROR_NO_ERROR "No communications error."
+    IDS_COMMS_ERROR_OPEN    "Communications error: opening connection."
+    IDS_COMMS_ERROR_SEND    "Communications error: sending data."
+    IDS_COMMS_ERROR_SEND_CLOSED 
+                            "Communications error: sending data - connection closed."
+    IDS_COMMS_ERROR_RECV    "Communications error: receiving data."
+    IDS_COMMS_ERROR_RECV_CLOSED 
+                            "Communications error: receiving data - connection closed."
+    IDS_COMMS_ERROR_CLOSE   "Communications error: closing connection."
+    IDS_COMMS_ERROR_CLEAR_ERROR 
+                            "Communications error: could not clear data error."
+    IDS_COMMS_ERROR_END_POINT_INVALID 
+                            "Communications error: invalid end point."
+    IDS_COMMS_ERROR_CONFIGURE "Communications error: could not set timeouts."
+    IDS_COMMS_ERROR_INIT    "Communications error: could not initialise communications."
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_COMMS_ERROR_DEINIT  "Communications error: could not deinitialise communications."
+    IDS_COMMS_ERROR_RECV_TIMEOUT 
+                            "Communications error: receiving data - timed out."
+    IDS_COMMS_ERROR_SEND_TIMEOUT 
+                            "Communications error: sending data - timed out."
+    IDS_COMMS_ERROR_END_POINT_GET 
+                            "Communications error: could not retrieve end point."
+    IDS_COMMS_ERROR_SERVER_START "Communications error: starting server."
+    IDS_COMMS_ERROR_SERVER_LISTEN 
+                            "Communications error: listening for new connections."
+    IDS_COMMS_ERROR_SERVER_STOP "Communications error: stopping server."
+    IDS_COMMS_ERROR_RECV_END 
+                            "Communications error: receiving data - connection closed gracefully."
+    IDS_COMMS_ERROR_RECV_BLOCK 
+                            "Communications error: receiving data - no data immediately available."
+    IDS_COMMS_ERROR_RECV_COUNT 
+                            "Communications error: receiving data - received fewer bytes than requested."
+    IDS_COMMS_ERROR_CONNECT_TIMEOUT 
+                            "Communications error: connection attempt timed out."
+    IDS_COMMS_ERROR_SEND_END 
+                            "Communications error: sending data - connection closed gracefully."
+    IDS_COMMS_ERROR_PARAM_INVALID "Communications error: invalid parameter."
+    IDS_COMMS_ERROR_CONNECTION_BUSY 
+                            "Communications error: connection busy - could not carry out operation."
+    IDS_COMMS_ERROR_INVALID_OPERATION 
+                            "Communications error: invalid operation."
+END
+
+#endif    // English (U.K.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

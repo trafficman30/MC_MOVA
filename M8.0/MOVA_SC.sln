@@ -1,0 +1,35 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MVComms", "MVComms\MVComms.vcxproj", "{EE7EB35C-3726-46DE-91EB-DFBFF5D60EB1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MVUtils", "MVUtils\MVUtils.vcxproj", "{2210BA9D-4ACA-40F9-AF64-8310272C7F1C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F5CAE0D2-5F97-42E4-B9A2-098CE2BC2D2D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MOVA_SC", "MOVA_SC.vcxproj", "{DE74F0CF-D21A-4F8C-B895-D191A252E9AB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EE7EB35C-3726-46DE-91EB-DFBFF5D60EB1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EE7EB35C-3726-46DE-91EB-DFBFF5D60EB1}.Debug|Win32.Build.0 = Debug|Win32
+		{EE7EB35C-3726-46DE-91EB-DFBFF5D60EB1}.Release|Win32.ActiveCfg = Release|Win32
+		{EE7EB35C-3726-46DE-91EB-DFBFF5D60EB1}.Release|Win32.Build.0 = Release|Win32
+		{2210BA9D-4ACA-40F9-AF64-8310272C7F1C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2210BA9D-4ACA-40F9-AF64-8310272C7F1C}.Debug|Win32.Build.0 = Debug|Win32
+		{2210BA9D-4ACA-40F9-AF64-8310272C7F1C}.Release|Win32.ActiveCfg = Release|Win32
+		{2210BA9D-4ACA-40F9-AF64-8310272C7F1C}.Release|Win32.Build.0 = Release|Win32
+		{DE74F0CF-D21A-4F8C-B895-D191A252E9AB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DE74F0CF-D21A-4F8C-B895-D191A252E9AB}.Debug|Win32.Build.0 = Debug|Win32
+		{DE74F0CF-D21A-4F8C-B895-D191A252E9AB}.Release|Win32.ActiveCfg = Release|Win32
+		{DE74F0CF-D21A-4F8C-B895-D191A252E9AB}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

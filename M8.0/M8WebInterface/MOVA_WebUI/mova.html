@@ -1,0 +1,317 @@
+﻿<!doctype html>
+<html>
+<head>
+    <title> MOVA 8</title>
+    <style type="text/css">
+    </style><!-- Latest compiled and minified CSS -->
+    <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">-->
+    <!-- Optional theme -->
+    <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="./bootstrap.min.css">
+    <link rel="stylesheet" href="./bootstrap-theme.min.css">
+    <link rel="stylesheet" type="text/css" href="./Main.css">
+    <link rel="stylesheet" type="text/css" href="./ButtonsSwitches.css">
+    <style>
+    </style>
+</head>
+
+<!--Alternative: @media Repsonsive design part under  http://getbootstrap.com/2.3.2/scaffolding.html but not used here-->
+<body onresize="sortResizing()" onload="onLoad();">
+    <nav class="navbar navbar-fixed-top">
+        <div class="container-fluid">
+            <!--fluid spreads top part out-->
+            <div class="navbar-header">
+                <div class="container-full">
+                    <a class="pull-left"><img id="logo" class="logo hidden" src="./images/TRL_Logosmall.png" alt="TRL"></a> <!-- Ideally setting image  would move to css but 'content' not cross browser compatible also tricky to get other approaches working-->
+                    <a class="pull-left"><img id="smallLogo" class="smallLogo hidden" src="./images/TRL_Logoxsmall.png" alt="TRL"></a>
+                    <div class="navbar-brand" id="pageText"></div> <!--Brand is often used to put image in but its formatting is designed for text so using as header text instead - this allows it to space better with the navbar button for some reason-->
+                    <button type="button" id="smallNav" class="navbar-toggle collapsed " data-toggle="collapse" data-target=".navbar-collapse" aria-expanded="false">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar hiddenbar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                </div>
+
+            </div>
+        </div><!-- /.container-fluid -->
+        <!-- Nav links for toggling -->
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="#index" onclick="toggler('indexcontainer');" class="hidden"></a></li>
+                <li><a href="#onlinedata" onclick="toggler('onlinedatacontainer');">Online data</a></li>
+                <li><a href="#errors" onclick="toggler('errorcontainer');">Errors</a></li>
+                <li><a href="#activedataset" onclick="toggler('activedatasetcontainer');">Active Data set</a></li>
+                <li><a href="#tmalogs" onclick="toggler('tmalogscontainer');">TMA Logs</a></li>
+                <li><a href="#satflows" onclick="toggler('satflowlogscontainer');">SatFlow Logs</a></li>
+                <li><a href="#messages" onclick="toggler('messagescontainer');">Messages</a></li>
+            </ul>
+        </div> <!--navbar-collapse-->
+    </nav>
+
+    <div class="container" id="maincontainer">
+        <div class="container hidden " id="indexcontainer">
+            <!--Temporary for testing-->
+            <br> <br> <br>
+            <h2>MOVA M8 Web UI</h2>
+            <b>Messages:</b> <span id="messages">...</span>            <br>
+            <b>Detectors Status:</b> <span id="dets_status" style="color:blue">...</span>            <br>
+            <b>Confirm Bits:</b> <span id="confirm_bits" style="color:blue">...</span>            <br>
+            <b>Force Bits:</b> <span id="force_bits" style="color:blue">...</span>            <br>
+            <b>TO:</b> <span id="take_over_bit" style="color:blue">...</span>            <br>
+            <b>HI:</b> <span id="hurry_inhibit" style="color:blue">...</span>            <br>
+            <b>Operation Flags [Is MOVA Enabled]:</b> <span id="is_mova_enabled">...</span>            <br>
+            <b>Operation Flags [Is On Control]:</b> <span id="is_on_control">...</span>            <br>
+            <b>Operation Flags [Warm Up]:</b> <span id="warm_up">...</span>            <br>
+            <b>Error Count:</b> <span id="error_count">...</span>            <br>
+            <b>Error (1) Detail:</b> <span id="error_detail">...</span>            <br>
+            <b>Site Full Data:</b> <span id="site_full_data">...</span>            <br>
+            <b>Lanes count:</b> <span id="lanes_count">...</span>            <br>
+            <b>Sat Flow Data:</b> <span id="sat_flow_data">...</span>            <br>
+            <b>STLOST Data:</b> <span id="stlost_data">...</span>            <br>
+
+            <!--This works: *but in file:///C:/Program Files (x86)/MOVA/MOVA Tools/M8.0/tma_logs.csv but empty template - could be right-->
+            <!--This initiates downlaod in browser but grabs current html page instead and gives failure message-->
+            <!--<b>TMA Logs link2:</b> <a href="file:///C:/Program Files (x86)/MOVA/MOVA Tools/M8.0/tma_logs.csv" id="tma_logs_link" download="tma_logs.csv" target="_blank" onclick="sendReqAllTMALogs()">Download Link2</a>  <br>-->
+            <!--<b>TMA Logs link:</b> <a id="tma_logs_link" onclick="sendReqAllTMALogs()">Download Link</a>  <br>-->
+            <!--Hardcoding to hard drive area and can't get from server area (no relational path to put into href) - is this created  on the fly??-->
+            <!--Additionally,link not clickable in area required-->
+            <!--<a href="" id="tma_logs_link" onclick="sendReqAllTMALogs()" download="tma_logs.csv">Download Link</a>-->
+        </div>
+        <div class="container" id="onlinedatacontainer">
+            <section>
+                <div class="row col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div>&nbsp;</div> <div>&nbsp;</div><div>&nbsp;</div>
+                </div>
+                <h3><b>Detectors/Channels status</b></h3>
+                <div class="row"><div id="Channel"> </div></div>
+
+                <h3><b>Confirm bits status</b></h3>
+                <div class="row"><div id="ConfirmBit"> </div></div>
+
+                <h3><b>Force bits status</b></h3>
+                <div class="row"><div id="ForceBit"> </div></div>
+
+
+                <div class="row">
+                    <div class="col-sm-6 col-md-4 col-lg-4">
+                        <h3 id="MovaEnabledText"></h3>
+                        <div class="onoffswitch">
+                            <input type="checkbox" disabled name="onoffswitch" class="onoffswitch-checkbox" id="MovaEnabledSwitch">
+                            <label class="onoffswitch-label" for="MovaEnabledSwitch">
+                                <span class="onoffswitch-inner"></span>
+                                <span class="onoffswitch-switch"></span>
+                            </label>
+                        </div>
+                    </div>
+                      <div class="col-sm-6 col-md-8 col-lg-8">
+                        <h3 id="OnControlText"></h3>
+                        <div class="onoffswitch">
+                            <input type="checkbox" disabled name="onoffswitch" class="onoffswitch-checkbox" id="OnControlSwitch">
+                            <label class="onoffswitch-label" for="OnControlSwitch">
+                                <span class="onoffswitch-inner"></span>
+                                <span class="onoffswitch-switch"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+               
+                <div class="row">
+                   <div class="col-sm-6  col-md-4 col-lg-4">
+                        <h3 id="ErrorText"> </h3>
+                        <input class="textbox" id="errorCountBox" disabled value="10" style="text-align:center" type="text">
+                    </div>
+                    <div class="col-sm-6  col-md-8 col-lg-8">
+                        <h3 id="WarmUpText"></h3>
+                        <input class="textbox" id="warmUpBox" disabled value="20" style="text-align:center" type="text">
+                    </div>
+                 </div>
+
+                <div class="row col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div>&nbsp;</div> 
+                    <p class="centreInDiv hidden">
+                         <span id=warningMessage1> Warning: </span>
+                        <span id=warningMessage2> connection to controller has been lost&nbsp;</span>
+                    </p> <!--"ConnectionLost"-->
+                </div>
+            </section>
+        </div>
+
+        <div class="container hidden" id="errorcontainer" style="overflow-x:auto;">
+            <section>
+                <div class="row col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div class="row"><div>&nbsp;</div> <div>&nbsp;</div><div>&nbsp;</div></div>
+                </div>
+                <div id="errorTableDiv">
+                    <table id="errorTable" class='errorTable centreInDiv'></table>
+                </div>
+                <div>&nbsp;</div>
+                <div class="centreInDiv">  <a href="#" id="errorRefresh" class="glass">Refresh</a> </div>
+                <div>&nbsp;</div>
+            </section>
+        </div>
+
+        <div class="container hidden" id="activedatasetcontainer" style="overflow-x:auto;">
+            <section>
+                <div class="row col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div class="row"><div>&nbsp;</div> <div>&nbsp;</div><div>&nbsp;</div></div>
+                </div>
+                <div id="activeDatasetDiv">
+                </div>
+
+            </section>
+        </div>
+
+        <div class="container hidden" id="tmalogscontainer">
+            <section>
+                <div class="row">
+                    <div class="row"><div>&nbsp;</div> <div>&nbsp;</div><div>&nbsp;</div></div>
+                    <div class="centreInDiv">
+                          <a href="" id="tma_logs_link" class="glass" onclick="sendReqAllTMALogs()">Download TMA logs data file</a>  <br>
+                     </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="container hidden" id="satflowlogscontainer" style="overflow-x:auto;">
+            <section>
+                <div class="row col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div class="row"><div>&nbsp;</div> <div>&nbsp;</div><div>&nbsp;</div></div>
+                </div>
+                <div class="row">
+                    <div class="centreInDiv"><a href="#" id="satflowRefresh" class="glass">Refresh</a><div>&nbsp;</div></div>
+                    <div class="centreInDiv"><a href="#" id="satflowDownload" class="glass">Download SatFlow logs data file</a>  </div>
+                    <div class="row"><div>&nbsp;</div> <div>&nbsp;</div></div>
+                </div>
+                <div id="satFlowLogsDiv"> </div>
+                <div class="row"><div>&nbsp;</div> <div>&nbsp;</div><div>&nbsp;</div></div>
+            </section>
+        </div>
+
+        <div class="container hidden" id="messagescontainer">
+            <!--style="overflow-x:auto;">-->
+            <section>
+                <div class="row col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div class="line">&nbsp;</div> <div>&nbsp;</div><div>&nbsp;</div>
+                </div>
+                <!--<div class="row ">
+                    <a href="#" id="mesgRefresh" class="glass">Refresh</a>
+                </div>-->
+                <div class="row">
+                    <div id="MessagesBoxDiv" class="col-md-12 col-lg-12"> </div>
+                </div>
+                <div class="row ">
+                     <div id="AutoScrollText"></div>
+                         <div class="onoffswitch">
+                            <input type="checkbox" name="onoffswitch" ; onclick="switchControl();" class="onoffswitch-checkbox" id="AutoScrollSwitch">
+                            <label class="onoffswitch-label" for="AutoScrollSwitch">
+                                <span class="onoffswitch-inner"></span>
+                                <span class="onoffswitch-switch"></span>
+                            </label>
+                        </div>
+                    <div id="SFMessageText"></div>
+                        <div class="onoffswitch">
+                            <input type="checkbox" name="onoffswitch" ; onclick="switchControl();" class="onoffswitch-checkbox" id="SFMessageSwitch">
+                            <label class="onoffswitch-label" for="SFMessageSwitch">
+                                <span class="onoffswitch-inner"></span>
+                                <span class="onoffswitch-switch"></span>
+                            </label>
+                        </div>
+                 </div>
+                <div>&nbsp;</div>
+                <div class="row"><div>&nbsp;</div> <div>&nbsp;</div><div>&nbsp;</div></div>
+</section>
+        </div>
+    </div>
+
+    <div id="footer">
+        <div class="footer_contents">
+            <div class="row">
+                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6" align="left">
+                    <b>MOVA Time:&nbsp;</b>
+                    <span id="movaTime">...</span>
+                </div>
+                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6" align="right">
+                    <b>Kernel Version:&nbsp;</b>
+                    <span id="movaVersion" >...</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <p class="centreInDiv">
+                        V1.0.0.000 @ Copyright 2016 TRL. All rights reserved.
+                    </p>
+                </div>
+                <div>&nbsp;</div> <div>&nbsp;</div><div>&nbsp;</div>
+            </div>
+        </div>
+    </div>
+
+    <!--Get latest CDN minified from here (but dropdown not working when tried) :https://code.jquery.com/-->
+    <!--<script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>-->
+    <script src="./jquery-3.0.0.min.js"></script>
+    <script src="./MainScripts.js"></script>
+    <script type="text/javascript">
+
+        //Initial Page Load
+        $(function () {
+
+            // Find active container upon page load and set the title (should be online data but not assuming)
+            if (!$("#onlinedatacontainer").is(":hidden")) { setTitle('onlinedatacontainer'); }
+            if (!$("#errorcontainer").is(":hidden")) { setTitle('errorcontainer'); }
+            if (!$("#activedatasetcontainer").is(":hidden")) { setTitle('activedatasetcontainer'); }
+            if (!$("#tmalogscontainer").is(":hidden")) { setTitle('tmalogscontainer'); }
+            if (!$("#satflowlogscontainer").is(":hidden")) { setTitle('satflowlogscontainer'); }
+            if (!$("#messagescontainer").is(":hidden")) { setTitle('messagescontainer'); }
+
+            // Resizing due to screensize - needs to work on smartphones,tablets and desktops
+            sortResizing();
+
+            // ONLINE DATA
+            sendReqDetectorsStatus()
+            sendReqConfirmBits();
+            sendReqForceBits();
+            sendReqOperationFlags();
+
+            // ERRORS PAGE
+            sendReqErrorCount();
+
+            // ACTIVE DATA SET
+            sendReqSiteFullData();
+
+            // TMA LOGS
+            sendReqAllTMALogs();
+
+            //SATFLOW LOGS
+            sendReqLanesCount(); // this in turn gets the Satflows and STLOST data into tables
+
+            // MESSAGES 
+
+            processMessages();
+
+
+            // FOOTER
+            sendReqMOVATime(); //This is to be incremented by the javascript after page load, though turn red if MOVA Time and system time exceed certain threshold
+            sendReqKernelVersion();
+        });
+
+    </script>
+    <script src="./String.js"></script>
+    <script src="./DataManagement.js"></script>
+    <script src="./Errors.js"></script>
+    <script src="./Messages.js"></script>
+    <script src="./TableStructures.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>-->
+    <script src="./jquery-1.12.4.min.js"></script>  <!--note: bootsrap does not accept v3 of JQuery library-->
+    <script src="./bootstrap.min.js"></script>
+
+    <div class="device-xs visible-xs"></div>
+    <div class="device-sm visible-sm"></div>
+    <div class="device-md visible-md"></div>
+    <div class="device-lg visible-lg"></div>
+
+</body>
+</html>

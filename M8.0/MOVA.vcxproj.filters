@@ -1,0 +1,649 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{f40b53c8-1322-4434-a1af-054d1abda01f}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm</Extensions>
+    </Filter>
+    <Filter Include="Source Files\MOVA Kernel">
+      <UniqueIdentifier>{2a583c79-b268-4f1a-b5fe-ae8529eff935}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Siemens Dummy Files">
+      <UniqueIdentifier>{76c162fe-6a1c-425f-a656-fca7d880aedf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{98a6c22e-b32f-4c44-95e2-a6b8c9a5a4eb}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc</Extensions>
+    </Filter>
+    <Filter Include="Header Files\MOVA Kernel">
+      <UniqueIdentifier>{8f3d5451-d57d-4907-8143-ebb57c306b73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Siemens Dummy Files">
+      <UniqueIdentifier>{5b089fbb-8ff4-4859-a2aa-b5d4f10f4166}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{196140ea-e520-4bdd-ac27-2424ccd4bb42}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+    <Filter Include="Source Files\MOVA Kernel\Core">
+      <UniqueIdentifier>{6e13d0f0-a64d-4431-8101-181d932d731b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MOVA Kernel\Core\Algorithms">
+      <UniqueIdentifier>{0f4145ec-0a08-474d-8a7b-36c771015fe7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MOVA Kernel\Core\Timers Manager">
+      <UniqueIdentifier>{adb7c467-4e60-4972-8bb0-a89be6dcc611}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\MOVA Kernel\Core">
+      <UniqueIdentifier>{afa41e92-e944-432d-825b-716e8f92d4a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\MOVA Kernel\Core\Algorithms">
+      <UniqueIdentifier>{bbb22c01-6ce8-4a85-aeec-d6e5d439345b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\MOVA Kernel\Core\Entities Handlers">
+      <UniqueIdentifier>{36b0b3c6-89a9-4672-aff1-a130820ad1a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MOVA Kernel\Core\Entities Handlers">
+      <UniqueIdentifier>{8b7cbce2-c23d-4a81-8cd0-a22994288ca7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\MOVA Kernel\Core\Timers Manager">
+      <UniqueIdentifier>{895cf7ee-a707-4c0a-934e-b1d85ce51a92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\MOVA Kernel\Core\Data">
+      <UniqueIdentifier>{564155b1-1e9c-4115-bc59-4a54fde98277}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MOVA Kernel\Core\Messages">
+      <UniqueIdentifier>{ba361918-94ad-454d-863d-c1f43d47a3c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\MOVA Kernel\Core\Messages">
+      <UniqueIdentifier>{1cc4e8eb-7b10-4689-9f12-82d5b4dfd39e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MOVA Kernel\Core\SF">
+      <UniqueIdentifier>{dcd1af9f-ad1a-4e39-8684-4d890d6b7853}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\MOVA Kernel\Core\SF">
+      <UniqueIdentifier>{0450e256-eda3-4ba0-8b80-ba7a133f5da0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\MOVA Kernel\Data Handler">
+      <UniqueIdentifier>{139b822f-e74d-40bb-99ca-63da87952790}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MOVA Kernel\Data Handler">
+      <UniqueIdentifier>{0660633d-3c75-4baa-936c-bfd48d4181d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MOVA Kernel\TMA">
+      <UniqueIdentifier>{789a5e94-f2c0-4842-b412-767645a55a62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\MOVA Kernel\TMA">
+      <UniqueIdentifier>{2fb74878-cb28-434c-83ef-147eac833dcf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\MOVA Kernel\Debugging">
+      <UniqueIdentifier>{bbc258fd-6d1a-46d3-812f-64f4a05d732d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MOVA Kernel\Debugging">
+      <UniqueIdentifier>{0a4a8aef-b897-45be-8a6f-e8b0dfbdcef9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\AML">
+      <UniqueIdentifier>{e22d8ead-90e1-4f67-8d00-4484c82d6799}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\AML">
+      <UniqueIdentifier>{9a9edf13-f0c8-4764-a3b8-f7aa454454df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\AML\JSMN">
+      <UniqueIdentifier>{df8a9e27-a0f2-43b5-872d-e5365d622a4b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\AML\JSMN">
+      <UniqueIdentifier>{ad99b544-fe34-4d55-9b9b-bab38b880616}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Copy Protection">
+      <UniqueIdentifier>{9a18999c-abe8-41fd-8e66-41fa2458c822}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Copy Protection">
+      <UniqueIdentifier>{0fa641d8-c158-4268-a027-2ba5b1311208}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Messages.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pcclock.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pccontio.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pcdatset.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pcerror.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pcioscan.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pckernel.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PCMOVA.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pctasks.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pcuserio.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\answer.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\comms.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\detscn.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\errhand.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\generalfunc.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\genstg.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\getentry.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\ioscan.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\monitr.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\mova_if.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\movadata.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\obclock.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\output.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\phone.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\term.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\userbig.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\write.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="SiemensDummyFiles\dummydata.c">
+      <Filter>Source Files\Siemens Dummy Files</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\display_msg.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\mova.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\sf.c">
+      <Filter>Source Files\MOVA Kernel\Core\SF</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\sfdepen.c">
+      <Filter>Source Files\MOVA Kernel\Core\SF</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\sfstats.c">
+      <Filter>Source Files\MOVA Kernel\Core\SF</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\tma_alerts.c">
+      <Filter>Source Files\MOVA Kernel\TMA</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\tma_mem.c">
+      <Filter>Source Files\MOVA Kernel\TMA</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\tma_preprint.c">
+      <Filter>Source Files\MOVA Kernel\TMA</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\algorithms_manager.c">
+      <Filter>Source Files\MOVA Kernel\Core\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\calculate_bonus_green_time.c">
+      <Filter>Source Files\MOVA Kernel\Core\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\calculate_reduced_lost_time.c">
+      <Filter>Source Files\MOVA Kernel\Core\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\calculate_short_cycle_control_params.c">
+      <Filter>Source Files\MOVA Kernel\Core\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\capacity_maximisation.c">
+      <Filter>Source Files\MOVA Kernel\Core\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\delay_and_stops_optimiser.c">
+      <Filter>Source Files\MOVA Kernel\Core\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\estimate_queues_size.c">
+      <Filter>Source Files\MOVA Kernel\Core\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\detectors_handler.c">
+      <Filter>Source Files\MOVA Kernel\Core\Entities Handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\junction_handler.c">
+      <Filter>Source Files\MOVA Kernel\Core\Entities Handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\lanes_endsat_handler.c">
+      <Filter>Source Files\MOVA Kernel\Core\Entities Handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\lanes_handler.c">
+      <Filter>Source Files\MOVA Kernel\Core\Entities Handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\links_endsat_handler.c">
+      <Filter>Source Files\MOVA Kernel\Core\Entities Handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\links_handler.c">
+      <Filter>Source Files\MOVA Kernel\Core\Entities Handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\stages_handler.c">
+      <Filter>Source Files\MOVA Kernel\Core\Entities Handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\timers_manager.c">
+      <Filter>Source Files\MOVA Kernel\Core\Timers Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\messages_manager.c">
+      <Filter>Source Files\MOVA Kernel\Core\Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\core_interface.c">
+      <Filter>Source Files\MOVA Kernel\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\stages_codes_handler.c">
+      <Filter>Source Files\MOVA Kernel\Core\Entities Handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\links_ep_handler.c">
+      <Filter>Source Files\MOVA Kernel\Core\Entities Handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\stages_ep_handler.c">
+      <Filter>Source Files\MOVA Kernel\Core\Entities Handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\datahand.c">
+      <Filter>Source Files\MOVA Kernel\Data Handler</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\dataset_interface.c">
+      <Filter>Source Files\MOVA Kernel\Data Handler</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\kdebug.c">
+      <Filter>Source Files\MOVA Kernel\Debugging</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\estimate_right_turners_count_during_opposed_stage.c">
+      <Filter>Source Files\MOVA Kernel\Core\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\ui_dataaccess.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\ui_dataaccesstest.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mova_api.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="aml_handler.c">
+      <Filter>Source Files\AML</Filter>
+    </ClCompile>
+    <ClCompile Include="aml_messages_handler.c">
+      <Filter>Source Files\AML</Filter>
+    </ClCompile>
+    <ClCompile Include="aml_messages_decoder_encoder.c">
+      <Filter>Source Files\AML</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\blocka.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\blockb.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\blockc.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\blockd.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\blockp.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="jsmn-master\jsmn.c">
+      <Filter>Source Files\AML\JSMN</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\program_controller.c">
+      <Filter>Source Files\MOVA Kernel\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="aml_dataset_file_handler.c">
+      <Filter>Source Files\AML</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\dataset_handler.c">
+      <Filter>Source Files\MOVA Kernel\Data Handler</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\spec_cond.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="aml_generic_files_handler.c">
+      <Filter>Source Files\AML</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\alerts.c">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\xml_dataset.c">
+      <Filter>Source Files\MOVA Kernel\Data Handler</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyProtection\ExternalManagedCode\SignatureVerifier.cpp">
+      <Filter>Source Files\Copy Protection</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyProtection\ERIS.cpp">
+      <Filter>Source Files\Copy Protection</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="kernel\hugemova.sa">
+      <Filter>Source Files\MOVA Kernel</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Messages.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MsgTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pcclock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pccontio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pcdatset.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pcerror.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pcioscan.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pckernel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pctasks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pctypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pcuserio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\defines.h">
+      <Filter>Header Files\MOVA Kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\errhand.h">
+      <Filter>Header Files\MOVA Kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\gbltypes.h">
+      <Filter>Header Files\MOVA Kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\generalfunc.h">
+      <Filter>Header Files\MOVA Kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\getentry.h">
+      <Filter>Header Files\MOVA Kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\mova.h">
+      <Filter>Header Files\MOVA Kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\mova_op.h">
+      <Filter>Header Files\MOVA Kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\obclock.h">
+      <Filter>Header Files\MOVA Kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\select.h">
+      <Filter>Header Files\MOVA Kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\write.h">
+      <Filter>Header Files\MOVA Kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="SiemensDummyFiles\base_types.h">
+      <Filter>Header Files\Siemens Dummy Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SiemensDummyFiles\diff_bss.h">
+      <Filter>Header Files\Siemens Dummy Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SiemensDummyFiles\error.h">
+      <Filter>Header Files\Siemens Dummy Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SiemensDummyFiles\hardware.h">
+      <Filter>Header Files\Siemens Dummy Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SiemensDummyFiles\inpoup.h">
+      <Filter>Header Files\Siemens Dummy Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SiemensDummyFiles\keptdata.h">
+      <Filter>Header Files\Siemens Dummy Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SiemensDummyFiles\licence.h">
+      <Filter>Header Files\Siemens Dummy Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SiemensDummyFiles\nu_omu.h">
+      <Filter>Header Files\Siemens Dummy Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SiemensDummyFiles\nucleus.h">
+      <Filter>Header Files\Siemens Dummy Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SiemensDummyFiles\proj_def.h">
+      <Filter>Header Files\Siemens Dummy Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SiemensDummyFiles\uart_int.h">
+      <Filter>Header Files\Siemens Dummy Files</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\display_msg.h">
+      <Filter>Header Files\MOVA Kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\alerts.h">
+      <Filter>Header Files\MOVA Kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\repository.h">
+      <Filter>Header Files\MOVA Kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\sf.h">
+      <Filter>Header Files\MOVA Kernel\Core\SF</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\sfdebug.h">
+      <Filter>Header Files\MOVA Kernel\Core\SF</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\sfdepen.h">
+      <Filter>Header Files\MOVA Kernel\Core\SF</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\sfmath.h">
+      <Filter>Header Files\MOVA Kernel\Core\SF</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\sfprv.h">
+      <Filter>Header Files\MOVA Kernel\Core\SF</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\sfstats.h">
+      <Filter>Header Files\MOVA Kernel\Core\SF</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\sfstatsprv.h">
+      <Filter>Header Files\MOVA Kernel\Core\SF</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\sftst.h">
+      <Filter>Header Files\MOVA Kernel\Core\SF</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\sftstprv.h">
+      <Filter>Header Files\MOVA Kernel\Core\SF</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\sftypes.h">
+      <Filter>Header Files\MOVA Kernel\Core\SF</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\tma_strc.h">
+      <Filter>Header Files\MOVA Kernel\TMA</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\tma_preprint.h">
+      <Filter>Header Files\MOVA Kernel\TMA</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\tma_mem.h">
+      <Filter>Header Files\MOVA Kernel\TMA</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\tma_alerts.h">
+      <Filter>Header Files\MOVA Kernel\TMA</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\algorithms_manager.h">
+      <Filter>Header Files\MOVA Kernel\Core\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\calculate_bonus_green_time.h">
+      <Filter>Header Files\MOVA Kernel\Core\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\calculate_reduced_lost_time.h">
+      <Filter>Header Files\MOVA Kernel\Core\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\calculate_short_cycle_control_params.h">
+      <Filter>Header Files\MOVA Kernel\Core\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\capacity_maximisation.h">
+      <Filter>Header Files\MOVA Kernel\Core\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\estimate_queues_size.h">
+      <Filter>Header Files\MOVA Kernel\Core\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\delay_and_stops_optimiser.h">
+      <Filter>Header Files\MOVA Kernel\Core\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\dynamic_data.h">
+      <Filter>Header Files\MOVA Kernel\Core\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\mova_dataset.h">
+      <Filter>Header Files\MOVA Kernel\Core\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\detectors_handler.h">
+      <Filter>Header Files\MOVA Kernel\Core\Entities Handlers</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\junction_handler.h">
+      <Filter>Header Files\MOVA Kernel\Core\Entities Handlers</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\lanes_endsat_handler.h">
+      <Filter>Header Files\MOVA Kernel\Core\Entities Handlers</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\lanes_handler.h">
+      <Filter>Header Files\MOVA Kernel\Core\Entities Handlers</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\links_endsat_handler.h">
+      <Filter>Header Files\MOVA Kernel\Core\Entities Handlers</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\links_handler.h">
+      <Filter>Header Files\MOVA Kernel\Core\Entities Handlers</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\stages_handler.h">
+      <Filter>Header Files\MOVA Kernel\Core\Entities Handlers</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\timers_manager.h">
+      <Filter>Header Files\MOVA Kernel\Core\Timers Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\mova_constants.h">
+      <Filter>Header Files\MOVA Kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\mova_types.h">
+      <Filter>Header Files\MOVA Kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\messages_manager.h">
+      <Filter>Header Files\MOVA Kernel\Core\Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\program_controller.h">
+      <Filter>Header Files\MOVA Kernel\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\core_interface.h">
+      <Filter>Header Files\MOVA Kernel\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\stages_codes_handler.h">
+      <Filter>Header Files\MOVA Kernel\Core\Entities Handlers</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\links_ep_handler.h">
+      <Filter>Header Files\MOVA Kernel\Core\Entities Handlers</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\stages_ep_handler.h">
+      <Filter>Header Files\MOVA Kernel\Core\Entities Handlers</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\dataset_interface.h">
+      <Filter>Header Files\MOVA Kernel\Data Handler</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\datahand.h">
+      <Filter>Header Files\MOVA Kernel\Data Handler</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\kdebug.h">
+      <Filter>Header Files\MOVA Kernel\Debugging</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\kdebugsettings.h">
+      <Filter>Header Files\MOVA Kernel\Debugging</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\estimate_right_turners_count_during_opposed_stage.h">
+      <Filter>Header Files\MOVA Kernel\Core\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\ui_dataaccess.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\ui_dataaccesstest.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mova_api.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aml_handler.h">
+      <Filter>Header Files\AML</Filter>
+    </ClInclude>
+    <ClInclude Include="aml_messages_handler.h">
+      <Filter>Header Files\AML</Filter>
+    </ClInclude>
+    <ClInclude Include="aml_messages_decoder_encoder.h">
+      <Filter>Header Files\AML</Filter>
+    </ClInclude>
+    <ClInclude Include="jsmn-master\jsmn.h">
+      <Filter>Header Files\AML\JSMN</Filter>
+    </ClInclude>
+    <ClInclude Include="aml_dataset_file_handler.h">
+      <Filter>Header Files\AML</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\dataset_handler.h">
+      <Filter>Header Files\MOVA Kernel\Data Handler</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\spec_cond.h">
+      <Filter>Header Files\MOVA Kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="aml_generic_files_handler.h">
+      <Filter>Header Files\AML</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\xml_dataset.h">
+      <Filter>Header Files\MOVA Kernel\Data Handler</Filter>
+    </ClInclude>
+    <ClInclude Include="CopyProtection\ERIS.h">
+      <Filter>Header Files\Copy Protection</Filter>
+    </ClInclude>
+    <ClInclude Include="CopyProtection\ExternalManagedCode\SignatureVerifier.h">
+      <Filter>Header Files\Copy Protection</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PCMOVA.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>
