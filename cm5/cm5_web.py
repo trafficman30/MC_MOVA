@@ -301,7 +301,7 @@ HTML = r'''<!DOCTYPE html>
   .mova-crb-dot.on    { background:#15803d; box-shadow:0 0 6px rgba(21,128,61,.4); }
   .mova-sec-hdr       { padding:4px 16px; background:#f9fafb; border-top:1px solid #e5e7eb; font-family:"Courier New",monospace; font-size:9px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#6b7280; }
   .mova-sec-body      { padding:8px 16px; }
-  .mova-bit-grid      { display:flex; flex-wrap:wrap; row-gap:6px; }
+  .mova-bit-grid      { display:flex; flex-direction:column; row-gap:2px; width:100%; }
   .mova-bit-group     { display:flex; margin-right:14px; }
   .mova-bit-cell      { display:flex; flex-direction:column; align-items:center; gap:2px; padding:0 3px; }
   .mova-bit-num       { font-family:"Courier New",monospace; font-size:9px; color:#6b7280; line-height:1; }
@@ -3469,13 +3469,22 @@ function _movaSetBits(container_id, values, cls_on) {
   if (!c) return;
   if (!c._built || c._built !== values.length) {
     c.innerHTML = '';
-    const grp = document.createElement('div'); grp.className = 'mova-bit-group';
-    values.forEach((v,i) => {
-      const cell = document.createElement('div'); cell.className = 'mova-bit-cell';
-      cell.innerHTML = `<div class="mova-bit-num">${i+1}</div><div class="mova-bit-dot" id="${container_id}-bit-${i}"></div>`;
-      grp.appendChild(cell);
-    });
-    c.appendChild(grp);
+    const availW    = (c.closest('.mova-card')||c).offsetWidth - 32;
+    const dotW      = 22;
+    const maxPerRow = Math.max(8, Math.floor(availW / dotW));
+    const sizes     = [64, 32, 16, 8];
+    const batchSize = sizes.find(s => s <= maxPerRow) || 8;
+    for (let start = 0; start < values.length; start += batchSize) {
+      const grp = document.createElement('div');
+      grp.className = 'mova-bit-group';
+      grp.style.cssText = 'display:flex;flex-wrap:nowrap;margin-bottom:4px;width:100%';
+      for (let i = start; i < Math.min(start + batchSize, values.length); i++) {
+        const cell = document.createElement('div'); cell.className = 'mova-bit-cell';
+        cell.innerHTML = `<div class="mova-bit-num">${i+1}</div><div class="mova-bit-dot" id="${container_id}-bit-${i}"></div>`;
+        grp.appendChild(cell);
+      }
+      c.appendChild(grp);
+    }
     c._built = values.length;
   }
   values.forEach((v,i) => {
