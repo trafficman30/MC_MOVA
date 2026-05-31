@@ -3576,7 +3576,7 @@ function applyMovaUpdate(streams) {
 
     // Bit grids
     _movaSetBits('mova-dets-' + n,  ios.detectors||[], 'on');
-    _movaSetBits('mova-confs-' + n, ios.confirms||[], 'on');
+    _movaSetBits('mova-confs-' + n, (ios.confirms||[]).slice(0,31), 'on');
 
     // Forces
     const forces = ios.forces||[];
@@ -3616,11 +3616,12 @@ function showMova(n, navEl) {
   const p = document.getElementById('panel-mova-' + n);
   if (p) p.classList.add('active');
   if (navEl) navEl.classList.add('active');
-  // Invalidate bit grids so they rebuild at correct width now panel is visible
+  // Invalidate bit grids then immediately rebuild at correct window width
   ['mova-dets-','mova-confs-'].forEach(pfx => {
     const el = document.getElementById(pfx + n);
     if (el) el._built = null;
   });
+  if (state.mova) applyMovaUpdate(state.mova);
   loadMovaDatasets(n);
 }
 
