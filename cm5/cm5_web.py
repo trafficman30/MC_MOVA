@@ -4872,7 +4872,7 @@ def api_restart():
     import subprocess
     def _do():
         time.sleep(0.5)
-        subprocess.run(['systemctl', 'restart', 'cm5'])
+        subprocess.run(['systemctl', 'restart', 'pci-cm5'])
     threading.Thread(target=_do, daemon=True, name='RestartCM5').start()
     log.info("CM5 restart requested via web UI")
     return Response(json.dumps({'ok': True}), mimetype='application/json')
