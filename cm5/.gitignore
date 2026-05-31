@@ -1,0 +1,14 @@
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local environment variables
+.env
+.venv/
+venv/
+ENV/
+
+# Claude local settings cache
+.claude/settings.local.json
+ug405/ug405.cfg.RPDB

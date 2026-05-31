@@ -1,0 +1,45 @@
+[
+  {
+    "signal": "RTIG1",
+    "movement": 1,
+    "trigger_point": 0,
+    "traffic_signal": 4444
+  },
+  {
+    "signal": "RTIG2",
+    "movement": 2,
+    "trigger_point": 1,
+    "traffic_signal": 12,
+    "priority": {
+      "op": "<=",
+      "val": 2
+    }
+  },
+  {
+    "signal": "RTIG3",
+    "movement": 2,
+    "trigger_point": 1,
+    "priority": {
+      "op": ">",
+      "val": 2
+    }
+  },
+  {
+    "signal": "RTIG4",
+    "movement": 2,
+    "trigger_point": 0,
+    "priority": {
+      "op": "=",
+      "val": 3
+    }
+  },
+  {
+    "signal": "RTIG5",
+    "movement": 3,
+    "trigger_point": 0,
+    "schedule_deviation": {
+      "op": ">=",
+      "val": 5
+    }
+  }
+]

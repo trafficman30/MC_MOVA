@@ -1,0 +1,188 @@
+{
+  "settings": {
+    "base_time_mode": "datetime",
+    "base_time": "01011970 0000",
+    "active_in_modes": [
+      1,
+      2
+    ]
+  },
+  "timetable": [
+    {
+      "days": [
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri"
+      ],
+      "start": "0700",
+      "plan": "AM_PEAK"
+    },
+    {
+      "days": [
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri"
+      ],
+      "start": "0900",
+      "plan": "INTER_PEAK"
+    },
+    {
+      "days": [
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri"
+      ],
+      "start": "1600",
+      "plan": "PM_PEAK"
+    },
+    {
+      "days": [
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri"
+      ],
+      "start": "1900",
+      "plan": "PM_PEAK"
+    },
+    {
+      "days": [
+        "Sat",
+        "Sun"
+      ],
+      "start": "0800",
+      "plan": "INTER_PEAK"
+    },
+    {
+      "days": [
+        "Sat",
+        "Sun"
+      ],
+      "start": "1800",
+      "plan": null
+    }
+  ],
+  "scns": {
+    "J0331": {
+      "plans": {
+        "AM_PEAK": {
+          "cycle_secs": 60,
+          "offsets": [
+            {
+              "at": 0,
+              "fn": "0x1",
+              "dn": "0x0",
+              "go": 1
+            },
+            {
+              "at": 25,
+              "fn": "0x6",
+              "dn": "0x0",
+              "mo": 1
+            },
+            {
+              "at": 27,
+              "fn": "0x7",
+              "dn": "0x0"
+            }
+          ]
+        },
+        "INTER_PEAK": {
+          "cycle_secs": 15,
+          "offsets": [
+            {
+              "at": 0,
+              "fn": "0x1",
+              "dn": "0x0",
+              "go": 1
+            },
+            {
+              "at": 5,
+              "fn": "0x6",
+              "dn": "0x0",
+              "mo": 1
+            },
+            {
+              "at": 10,
+              "fn": "0x7",
+              "dn": "0x0"
+            }
+          ]
+        },
+        "PM_PEAK": {
+          "cycle_secs": 72,
+          "offsets": [
+            {
+              "at": 0,
+              "fn": "0x1",
+              "dn": "0x0",
+              "go": 1
+            },
+            {
+              "at": 30,
+              "fn": "0x6",
+              "dn": "0x0",
+              "mo": 1
+            },
+            {
+              "at": 60,
+              "fn": "0x0",
+              "dn": "0x0"
+            }
+          ]
+        }
+      }
+    },
+    "J0332": {
+      "plans": {
+        "AM_PEAK": {
+          "cycle_secs": 12,
+          "offsets": [
+            {
+              "at": 0,
+              "fn": "0x1",
+              "dn": "0x0"
+            },
+            {
+              "at": 3,
+              "fn": "0x2",
+              "dn": "0x0"
+            },
+            {
+              "at": 6,
+              "fn": "0x4",
+              "dn": "0x0"
+            },
+            {
+              "at": 9,
+              "fn": "0x8",
+              "dn": "0x0"
+            }
+          ]
+        },
+        "INTER_PEAK": {
+          "cycle_secs": 12,
+          "offsets": [
+            {
+              "at": 0,
+              "fn": "0x1",
+              "dn": "0x0"
+            },
+            {
+              "at": 6,
+              "fn": "0x4",
+              "dn": "0x0"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
