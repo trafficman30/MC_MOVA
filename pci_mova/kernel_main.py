@@ -64,6 +64,7 @@ def _save_state(stream, stream_index: int) -> None:
         "filename":  os.path.basename(ds.source_path),
         "stream_id": ds.header.stream_id_str,
         "mova_on":   int(stream.buffers.io[27]),
+        "running":   int(stream._running.is_set()),
     }
     try:
         import json as _json
@@ -106,12 +107,14 @@ def _restore_state(stream, stream_index: int) -> None:
         log.warning("Stream %d: controller stream '%s' not in '%s' — skipping restore",
                     stream_index, ctrl_id, filename)
         return
-    ok = stream.load_dataset(all_streams[ctrl_id])
+    was_running = bool(state.get("running", 0))
+    ok = stream.load_dataset(all_streams[ctrl_id], auto_start=was_running)
     if ok:
         from pci_mova.core.io.simulated import SimulatedIO as _Sim
         if isinstance(stream.io, _Sim):
             stream.io.auto_follow = True
-        log.info("Stream %d: restored dataset '%s' (%s)", stream_index, filename, ctrl_id)
+        log.info("Stream %d: restored dataset '%s' (%s)%s", stream_index, filename, ctrl_id,
+                 " (started)" if was_running else " (idle)")
         if mova_on:
             stream.buffers.io[27] = 1
             log.info("Stream %d: MOVA_ON restored", stream_index)
@@ -175,7 +178,7 @@ def _build_cm5_io(stream_index: int) -> object:
     if not io_cfg or io_cfg.get("type") not in ("cm5", None):
         return None
     socket_path = io_cfg.get("socket", IOBUS_SOCKET)
-    return CM5IO(io_cfg, stream_index=stream_index, socket_path=socket_path)
+    return CM5IO(io_cfg, stream_id=stream_index, socket_path=socket_path)
 
 
 # ── IPC command handler ─────────────────────────────────────────────────────
@@ -343,6 +346,17 @@ def _make_cmd_handler(stream, stream_index: int, ipc, save_state_fn):
                     stream.io.auto_follow = bool(int(args[0]))
                 return {"t": "ack", "cmd": cmd, "ok": True}
 
+            elif cmd == "START":
+                if stream._dataset and not stream._running.is_set():
+                    stream.start()
+                    ipc.publish_event("stream_started")
+                save_state_fn()
+                return {"t": "ack", "cmd": cmd, "ok": True}
+
+            elif cmd == "STOP":
+                threading.Thread(target=lambda: (stream.stop(), ipc.publish_event("stream_stopped"), save_state_fn()), daemon=True).start()
+                return {"t": "ack", "cmd": cmd, "ok": True}
+
             elif cmd == "RESET":
                 stream.stop()
                 time.sleep(0.15)
@@ -433,6 +447,9 @@ def main() -> None:
 
     # ── Restore state ─────────────────────────────────────────────────────────
     _restore_state(stream, stream_index)
+    if stream._dataset is None:
+        from pci_mova.core.model.enums import MovaStatus
+        stream.status.set(MovaStatus.OFF)
 
     # ── MOVA Tools server ─────────────────────────────────────────────────────
     _start_mova_tools(stream)

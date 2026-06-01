@@ -191,6 +191,11 @@ class KernelBuffers:
             "kernel_deton":   self.kernel_deton[:MAX_DETECTORS],
             "confirms":       self.confin[:MAX_CONFIRMS - 1],  # 31 stage confirms; index 31 is CRB (internal)
             "forces":         self.dout[DOUT_FORCE_START:DOUT_FORCE_START + MAX_FORCE],
+            "to":             self.dout[DOUT_TO],
+            "hi":             self.dout[DOUT_HI],
+            "sync":           self.dout[DOUT_SYNC],
+            "det_fault":      self.dout[DOUT_DET_FAULT],
+            "mova_fault":     self.dout[DOUT_MOVA_FAULT],
             "io":             self.io[:MAX_IO],
             "special_outputs": list(self.special_outputs),
             "prog_marker":               self.prog_marker,

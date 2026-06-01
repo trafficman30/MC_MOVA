@@ -27,7 +27,7 @@ import logging
 import configparser
 from collections import deque
 
-from flask import Flask, Response, redirect, render_template_string, request, send_file, make_response
+from flask import Flask, Response, redirect, render_template_string, request, send_file, make_response, stream_with_context
 import auth as _auth
 
 log = logging.getLogger('WEB')
@@ -57,6 +57,121 @@ _snmp_opmode_trans      = {}             # '1→2' etc. → ts of last occurrenc
 _snmp_ctrl_log          = deque(maxlen=30)  # rolling Control SET log
 
 app = Flask(__name__)
+
+# ── MOVA pop-out page templates ───────────────────────────────────────────────
+
+_MOVA_POPOUT_CSS = '''
+    :root{--bg:#f0f2f5;--bg2:#fff;--bg3:#f9fafb;--border:#e5e7eb;--topbar:#1a2744;--accent:#00d4ff;--green:#15803d;--amber:#b45309;--red:#b91c1c;--text:#111827;--muted:#6b7280;--mono:"Courier New",monospace}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:-apple-system,sans-serif;font-size:13px;height:100vh;display:flex;flex-direction:column}
+    header{background:var(--topbar);height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;flex-shrink:0}
+    .logo{display:flex;align-items:center;gap:10px}.logo-mark{width:24px;height:24px;background:var(--accent);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)}
+    .logo-text{font-weight:600;font-size:14px;color:#fff}
+    .conn-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.25);transition:background .3s}
+    .conn-dot.live{background:#00e676;box-shadow:0 0 8px rgba(0,230,118,.6)}.conn-dot.error{background:#ff5252}
+    .conn-label{font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.55)}
+    .toolbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+    .toolbar-title{font-weight:600;font-size:13px}.toolbar-sep{flex:1}
+    .btn{padding:4px 12px;border:1px solid var(--border);border-radius:4px;background:var(--bg2);color:var(--text);font-family:var(--mono);font-size:11px;cursor:pointer;transition:all .15s;text-transform:uppercase;font-weight:500}
+    .btn:hover{background:var(--bg3);border-color:#9ca3af}.btn.danger:hover{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
+'''
+
+_MOVA_MESSAGES_HTML = '''<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>MOVA Messages</title><style>''' + _MOVA_POPOUT_CSS + '''
+    .filter-bar{background:var(--bg3);border-bottom:1px solid var(--border);padding:6px 16px;display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
+    .filter-btn{font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 8px;border-radius:3px;border:1px solid var(--border);background:var(--bg2);color:var(--muted);cursor:pointer}
+    .filter-btn.active{background:#dbeafe;border-color:#93c5fd;color:#1e40af}
+    .filter-btn.f5.active{background:#d1fae5;border-color:#6ee7b7;color:#065f46}
+    .filter-btn.f6.active{background:#fef3c7;border-color:#fcd34d;color:#92400e}
+    #log{flex:1;overflow-y:auto;font-family:var(--mono);font-size:12px}
+    .msg-row{display:flex;gap:12px;padding:4px 16px;border-bottom:1px solid var(--border);align-items:baseline}
+    .msg-row:hover{background:var(--bg3)}.msg-row.hidden{display:none}
+    .msg-seq{color:var(--muted);width:36px;text-align:right;flex-shrink:0;font-size:10px}
+    .msg-time{color:var(--muted);width:90px;flex-shrink:0;font-size:10px}
+    .msg-desc{flex:1}.msg-row.t1 .msg-desc{color:var(--green)}.msg-row.t5 .msg-desc{color:#2563eb;font-weight:600}.msg-row.t6 .msg-desc{color:var(--amber)}
+    .empty-state{display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-family:var(--mono);font-size:12px}
+</style></head><body>
+<header><div class="logo"><div class="logo-mark"></div><span class="logo-text">MOVA Messages</span></div>
+<div style="display:flex;align-items:center;gap:8px"><div class="conn-dot" id="dot"></div><span class="conn-label" id="conn-label">connecting…</span></div></header>
+<div class="toolbar"><span class="toolbar-title" id="title">Stream —</span>
+<label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><input type="checkbox" id="auto-scroll" checked> Auto-scroll</label>
+<div class="toolbar-sep"></div><button class="btn danger" onclick="clearLog()">Clear</button></div>
+<div class="filter-bar"><span style="font-size:10px;color:var(--muted);line-height:22px">Filter:</span>
+<button class="filter-btn active" data-type="all" onclick="setFilter(this)">ALL</button>
+<button class="filter-btn active f1" data-type="1" onclick="setFilter(this)">1 Stage start</button>
+<button class="filter-btn active f2" data-type="2" onclick="setFilter(this)">2 Var min</button>
+<button class="filter-btn active f3" data-type="3" onclick="setFilter(this)">3 Endsat</button>
+<button class="filter-btn active f4" data-type="4" onclick="setFilter(this)">4 Optimiser</button>
+<button class="filter-btn active f5" data-type="5" onclick="setFilter(this)">5 Stage change</button>
+<button class="filter-btn active f6" data-type="6" onclick="setFilter(this)">6 Intergreen</button></div>
+<div id="log"><div class="empty-state" id="empty">No messages yet…</div><div id="anchor"></div></div>
+<script>
+  const n = __STREAM__;
+  document.getElementById('title').textContent = 'Stream '+(n+1);
+  document.title = 'MOVA Messages — Stream '+(n+1);
+  let activeFilters = new Set(['1','2','3','4','5','6']);
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+  function appendMsg(m){
+    const e=document.getElementById('empty');if(e)e.remove();
+    const d=new Date(m.ts*1000),t=d.toLocaleTimeString('en-GB',{hour12:false})+'.'+String(d.getMilliseconds()).padStart(3,'0');
+    const row=document.createElement('div');
+    row.className='msg-row t'+m.type+(activeFilters.has(String(m.type))?'':' hidden');
+    row.dataset.type=m.type;
+    row.innerHTML='<span class="msg-seq">'+m.seq+'</span><span class="msg-time">'+t+'</span><span class="msg-desc">'+esc(m.desc)+'</span>';
+    document.getElementById('anchor').before(row);
+    if(document.getElementById('auto-scroll').checked)document.getElementById('anchor').scrollIntoView({block:'end'});
+  }
+  function clearLog(){document.getElementById('log').innerHTML='<div class="empty-state" id="empty">Cleared.</div><div id="anchor"></div>';}
+  function setFilter(btn){
+    const allOn=activeFilters.size===6;
+    if(btn.dataset.type==='all'){
+      if(allOn){activeFilters.clear();document.querySelectorAll('.filter-btn:not([data-type=all])').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+      else{activeFilters=new Set(['1','2','3','4','5','6']);document.querySelectorAll('.filter-btn').forEach(b=>b.classList.add('active'));}
+    }else{
+      const t=btn.dataset.type;
+      if(activeFilters.has(t)){activeFilters.delete(t);btn.classList.remove('active');}else{activeFilters.add(t);btn.classList.add('active');}
+      document.querySelector('[data-type=all]').classList.toggle('active',activeFilters.size===6);
+    }
+    document.querySelectorAll('.msg-row[data-type]').forEach(r=>r.classList.toggle('hidden',!activeFilters.has(r.dataset.type)));
+  }
+  const es = new EventSource('/mova/stream/'+n+'/messages');
+  es.onopen=()=>{document.getElementById('dot').className='conn-dot live';document.getElementById('conn-label').textContent='stream '+n;};
+  es.onerror=()=>{document.getElementById('dot').className='conn-dot error';document.getElementById('conn-label').textContent='reconnecting…';};
+  es.onmessage=ev=>{const d=JSON.parse(ev.data);(d.messages||[]).forEach(appendMsg);};
+</script></body></html>'''
+
+_MOVA_ERRORS_HTML = '''<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>MOVA Errors</title><style>''' + _MOVA_POPOUT_CSS + '''
+    #log{flex:1;overflow-y:auto;font-family:var(--mono);font-size:12px}
+    .err-row{display:flex;gap:12px;padding:5px 16px;border-bottom:1px solid var(--border);align-items:baseline}
+    .err-row:hover{background:#fff5f5}
+    .err-time{color:var(--muted);width:90px;flex-shrink:0;font-size:10px}
+    .err-code{color:var(--red);width:60px;flex-shrink:0;font-weight:600}
+    .err-label{flex:1;color:var(--red)}
+    .err-data{color:var(--muted);font-size:10px}
+    .empty-state{display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-family:var(--mono);font-size:12px}
+</style></head><body>
+<header><div class="logo"><div class="logo-mark"></div><span class="logo-text">MOVA Errors</span></div>
+<div style="display:flex;align-items:center;gap:8px"><div class="conn-dot" id="dot"></div><span class="conn-label" id="conn-label">connecting…</span></div></header>
+<div class="toolbar"><span class="toolbar-title" id="title">Stream —</span><div class="toolbar-sep"></div>
+<button class="btn danger" onclick="clearLog()">Clear</button></div>
+<div id="log"><div class="empty-state" id="empty">No errors — good.</div><div id="anchor"></div></div>
+<script>
+  const n = __STREAM__;
+  document.getElementById('title').textContent = 'Stream '+(n+1);
+  document.title = 'MOVA Errors — Stream '+(n+1);
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+  function appendErr(e){
+    const el=document.getElementById('empty');if(el)el.remove();
+    const d=new Date(e.ts*1000),t=d.toLocaleTimeString('en-GB',{hour12:false});
+    const row=document.createElement('div');row.className='err-row';
+    row.innerHTML='<span class="err-time">'+t+'</span><span class="err-code">'+esc(e.error_id||e.code||'?')+'</span><span class="err-label">'+esc(e.label||e.desc||'')+'</span><span class="err-data">data='+esc(e.data||0)+'</span>';
+    document.getElementById('anchor').before(row);
+  }
+  function clearLog(){document.getElementById('log').innerHTML='<div class="empty-state" id="empty">Cleared.</div><div id="anchor"></div>';}
+  const es = new EventSource('/mova/stream/'+n+'/errors');
+  es.onopen=()=>{document.getElementById('dot').className='conn-dot live';document.getElementById('conn-label').textContent='stream '+n;};
+  es.onerror=()=>{document.getElementById('dot').className='conn-dot error';document.getElementById('conn-label').textContent='reconnecting…';};
+  es.onmessage=ev=>{const d=JSON.parse(ev.data);(d.errors||[]).forEach(appendErr);};
+</script></body></html>'''
 
 # ── HTML ──────────────────────────────────────────────────────────────────────
 
@@ -297,19 +412,23 @@ HTML = r'''<!DOCTYPE html>
   .mova-sval.off      { color:#6b7280; }
   .mova-sval.warn     { color:#b45309; }
   .mova-sval.err      { color:#b91c1c; }
+  .mova-sval.toggle-btn { cursor:pointer; user-select:none; border:1px solid currentColor; border-radius:3px; padding:1px 6px; }
   .mova-crb-dot       { width:10px; height:10px; border-radius:50%; background:#d1d5db; flex-shrink:0; transition:all .2s; }
   .mova-crb-dot.on    { background:#15803d; box-shadow:0 0 6px rgba(21,128,61,.4); }
   .mova-sec-hdr       { padding:4px 16px; background:#f9fafb; border-top:1px solid #e5e7eb; font-family:"Courier New",monospace; font-size:9px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#6b7280; }
   .mova-sec-body      { padding:8px 16px; }
-  .mova-bit-grid      { display:flex; flex-direction:column; row-gap:2px; width:100%; }
-  .mova-bit-group     { display:flex; margin-right:14px; }
+  .mova-bit-grid      { display:flex; flex-wrap:wrap; row-gap:8px; }
+  .mova-bit-group     { display:flex; margin-right:16px; }
   .mova-bit-cell      { display:flex; flex-direction:column; align-items:center; gap:2px; padding:0 3px; }
   .mova-bit-num       { font-family:"Courier New",monospace; font-size:9px; color:#6b7280; line-height:1; }
   .mova-bit-dot       { width:12px; height:12px; border-radius:50%; background:#d1d5db; border:1px solid #9ca3af; transition:all .1s; }
-  .mova-bit-dot.on    { background:#15803d; border-color:#15803d; box-shadow:0 0 3px rgba(21,128,61,.4); }
-  .mova-bit-dot.amber { background:#b45309; border-color:#b45309; }
-  .mova-bit-dot.red   { background:#b91c1c; border-color:#b91c1c; box-shadow:0 0 3px rgba(185,28,28,.4); }
-  .mova-bit-dot.cyan  { background:#0891b2; border-color:#0891b2; box-shadow:0 0 4px rgba(8,145,178,.6); }
+  .mova-bit-dot.on       { background:#15803d; border-color:#15803d; box-shadow:0 0 3px rgba(21,128,61,.4); }
+  .mova-bit-dot.amber    { background:#b45309; border-color:#b45309; }
+  .mova-bit-dot.red      { background:#b91c1c; border-color:#b91c1c; box-shadow:0 0 3px rgba(185,28,28,.4); }
+  .mova-bit-dot.cyan     { background:#0891b2; border-color:#0891b2; box-shadow:0 0 4px rgba(8,145,178,.6); }
+  .mova-bit-dot.hi-on    { background:#15803d; border-color:#15803d; box-shadow:0 0 3px rgba(21,128,61,.4); }
+  .mova-bit-dot.sync-on  { background:#2563eb; border-color:#2563eb; box-shadow:0 0 3px rgba(37,99,235,.4); }
+  .mova-bit-dot.fault-on { background:#b91c1c; border-color:#b91c1c; box-shadow:0 0 3px rgba(185,28,28,.4); }
   .mova-fault-item    { padding:4px 10px; background:#fee2e2; border:1px solid #fca5a5; border-radius:3px; font-family:"Courier New",monospace; font-size:11px; color:#991b1b; margin-bottom:3px; }
   .mova-ctrl-row      { display:flex; gap:6px; padding:10px 16px; border-top:1px solid #e5e7eb; background:#f9fafb; flex-wrap:wrap; align-items:center; }
   .mova-btn           { padding:5px 14px; border:1px solid #e5e7eb; border-radius:4px; background:#fff; color:#111827; font-family:"Courier New",monospace; font-size:11px; cursor:pointer; transition:all .15s; text-transform:uppercase; font-weight:500; white-space:nowrap; }
@@ -1146,6 +1265,20 @@ HTML = r'''<!DOCTYPE html>
     <div id="panel-users" class="panel">
       <h2 style="font-size:14px;font-weight:600;color:#1a2744;margin-bottom:14px">User Management</h2>
 
+      <!-- Licence -->
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-bottom:16px">
+        <h3 style="font-size:13px;font-weight:600;color:#374151;margin-bottom:12px">MOVA Licence</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" id="lic-grid">
+          <div><div style="font-size:9px;color:#6b7280;font-family:'Courier New',monospace;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px">STATUS</div><div style="font-size:13px;font-weight:600;font-family:'Courier New',monospace" id="lic-status">—</div></div>
+          <div><div style="font-size:9px;color:#6b7280;font-family:'Courier New',monospace;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px">MAX STREAMS</div><div style="font-size:13px;font-weight:600;font-family:'Courier New',monospace;color:#111827" id="lic-streams">—</div></div>
+          <div><div style="font-size:9px;color:#6b7280;font-family:'Courier New',monospace;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px">OWNER</div><div style="font-size:13px;font-weight:600;font-family:'Courier New',monospace;color:#111827" id="lic-owner">—</div></div>
+          <div><div style="font-size:9px;color:#6b7280;font-family:'Courier New',monospace;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px">PROVIDER</div><div style="font-size:13px;font-weight:600;font-family:'Courier New',monospace;color:#111827" id="lic-provider">—</div></div>
+          <div><div style="font-size:9px;color:#6b7280;font-family:'Courier New',monospace;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px">KERNEL</div><div style="font-size:13px;font-weight:600;font-family:'Courier New',monospace;color:#111827" id="lic-kver">—</div></div>
+          <div><div style="font-size:9px;color:#6b7280;font-family:'Courier New',monospace;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px">REF</div><div style="font-size:13px;font-weight:600;font-family:'Courier New',monospace;color:#111827" id="lic-ref">—</div></div>
+          <div style="grid-column:1/-1"><div style="font-size:9px;color:#6b7280;font-family:'Courier New',monospace;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px">FINGERPRINT</div><div style="font-size:10px;font-weight:600;font-family:'Courier New',monospace;color:#111827;word-break:break-all" id="lic-fp">—</div></div>
+        </div>
+      </div>
+
       <!-- Site name -->
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-bottom:16px">
         <h3 style="font-size:13px;font-weight:600;color:#374151;margin-bottom:10px">Site Name</h3>
@@ -1241,11 +1374,11 @@ HTML = r'''<!DOCTYPE html>
           </div>
           <div class="mova-status-cell">
             <div class="mova-slabel">On Control</div>
-            <div class="mova-sval off" id="mova-onctrl-{{n}}">NO</div>
+            <div class="mova-sval off toggle-btn" id="mova-onctrl-{{n}}" onclick="movaSetIO({{n}},19,1)">NO</div>
           </div>
           <div class="mova-status-cell">
             <div class="mova-slabel">MOVA Enabled</div>
-            <div class="mova-sval off" id="mova-en-{{n}}">NO</div>
+            <div class="mova-sval off toggle-btn" id="mova-en-{{n}}" onclick="movaSetIO({{n}},27,1)">NO</div>
           </div>
           <div class="mova-status-cell">
             <div class="mova-slabel">Error Count</div>
@@ -1279,14 +1412,19 @@ HTML = r'''<!DOCTYPE html>
         <div class="mova-sec-body"><div class="mova-bit-grid" id="mova-confs-{{n}}"></div></div>
 
         <!-- Forces -->
-        <div class="mova-sec-hdr">Force Bits</div>
+        <div class="mova-sec-hdr">Force Bits Status</div>
+        <div class="mova-sec-body">
+          <div class="mova-bit-grid" id="mova-forces-{{n}}"></div>
+        </div>
+
+        <!-- Special Outputs -->
+        <div class="mova-sec-hdr">Special Outputs</div>
         <div class="mova-sec-body">
           <div class="mova-bit-grid">
-            <div class="mova-bit-group" id="mova-forces-{{n}}"></div>
-            <div class="mova-bit-group" style="margin-left:14px;border-left:1px solid #e5e7eb;padding-left:14px">
+            <div class="mova-bit-group" id="mova-special-{{n}}"></div>
+            <div class="mova-bit-group">
               <div class="mova-bit-cell"><div class="mova-bit-num">HI</div><div class="mova-bit-dot" id="mova-hi-{{n}}"></div></div>
-              <div class="mova-bit-cell"><div class="mova-bit-num">TO</div><div class="mova-bit-dot" id="mova-to-{{n}}"></div></div>
-              <div class="mova-bit-cell"><div class="mova-bit-num">SYNC</div><div class="mova-bit-dot cyan" id="mova-sync-{{n}}"></div></div>
+              <div class="mova-bit-cell"><div class="mova-bit-num">SYNC</div><div class="mova-bit-dot" id="mova-sync-{{n}}"></div></div>
               <div class="mova-bit-cell"><div class="mova-bit-num">FLT</div><div class="mova-bit-dot" id="mova-flt-{{n}}"></div></div>
             </div>
           </div>
@@ -1318,9 +1456,25 @@ HTML = r'''<!DOCTYPE html>
 
         <!-- Controls row -->
         <div class="mova-ctrl-row">
-          <button class="mova-btn mova-on-btn admin-only" id="mova-btn-on-{{n}}" onclick="movaCmdOn({{n}})">⚡ MOVA ON</button>
+          <button class="mova-btn admin-only" onclick="movaCmd({{n}},'START',[])">Start</button>
+          <button class="mova-btn admin-only" onclick="movaCmd({{n}},'STOP',[])">Stop</button>
+          <button class="mova-btn admin-only" onclick="movaPromptForce({{n}})">Force</button>
           <button class="mova-btn mova-reset-btn admin-only" onclick="movaCmdReset({{n}})">Reset</button>
+          <select id="mova-speed-{{n}}" onchange="movaCmd({{n}},'SET_SPEED',[this.value])" style="font-family:'Courier New',monospace;font-size:10px;padding:3px 6px;border:1px solid #e5e7eb;border-radius:3px;background:#fff;cursor:pointer">
+            <option value="1">1x</option><option value="2">2x</option><option value="5">5x</option>
+          </select>
+          <select id="mova-tod-{{n}}" onchange="movaCmd({{n}},'SET_TOD_OFFSET',[this.value])" style="font-family:'Courier New',monospace;font-size:10px;padding:3px 6px;border:1px solid #e5e7eb;border-radius:3px;background:#fff;cursor:pointer">
+            <option value="0">TOD +0h</option><option value="2">TOD +2h</option><option value="4">TOD +4h</option>
+            <option value="6">TOD +6h</option><option value="8">TOD +8h</option><option value="10">TOD +10h</option>
+            <option value="12">TOD +12h</option><option value="-2">TOD −2h</option><option value="-4">TOD −4h</option>
+            <option value="-6">TOD −6h</option>
+          </select>
           <button class="mova-btn" onclick="movaShowDatasetLoader({{n}})">Dataset</button>
+          <button class="mova-btn mova-log-btn" onclick="movaOpenWin('/mova/derived?stream={{n}}','mova-derived-{{n}}',1000,800)">Derived</button>
+          <button class="mova-btn mova-log-btn" onclick="movaOpenWin('/mova/messages?stream={{n}}','mova-messages-{{n}}',900,700)">Messages</button>
+          <button class="mova-btn mova-log-btn" onclick="movaOpenWin('/mova/errors?stream={{n}}','mova-errors-{{n}}',700,600)">Errors</button>
+          <button class="mova-btn mova-log-btn" onclick="movaOpenWin('/mova/history?stream={{n}}','mova-history-{{n}}',1200,900)">History</button>
+          <button class="mova-btn mova-log-btn" onclick="movaOpenWin('/mova/analysis?stream={{n}}','mova-analysis-{{n}}',1300,900)">Analysis</button>
           <button class="mova-btn" onclick="movaToggleIOMap({{n}})">I/O Map</button>
           <button class="mova-btn mova-log-btn" onclick="movaPopout({{n}})">⬡ Pop out</button>
         </div>
@@ -3337,6 +3491,17 @@ function restartCm5() {
 let _pwTargetId = null;
 
 function loadUsers() {
+  fetch('/api/mova/licence').then(r=>r.json()).then(j => {
+    const ge = id => document.getElementById(id);
+    const s = ge('lic-status'); if(s){ s.textContent=j.valid?'VALID':'UNLICENSED'; s.style.color=j.valid?'#15803d':'#b91c1c'; }
+    const set = (id,v) => { const e=ge(id); if(e) e.textContent=v||'—'; };
+    set('lic-streams', j.max_streams);
+    set('lic-owner',   j.owner);
+    set('lic-provider',j.provider);
+    set('lic-kver',    j.kernel);
+    set('lic-ref',     j.licence_ref);
+    set('lic-fp',      j.fingerprint);
+  }).catch(()=>{});
   fetch('/api/users').then(r=>r.json()).then(users => {
     const tbody = document.getElementById('users-tbody');
     if (!tbody) return;
@@ -3494,6 +3659,20 @@ function _movaSetBits(container_id, values, cls_on) {
   });
 }
 
+function _movaUpdateSpecial(container_id, values) {
+  const c = document.getElementById(container_id); if (!c) return;
+  if (!c.children.length) {
+    for (let i = 0; i < 8; i++) {
+      const cell = document.createElement('div'); cell.className='mova-bit-cell';
+      const num  = document.createElement('div'); num.className='mova-bit-num'; num.textContent=String(i+1).padStart(2,'0');
+      const dot  = document.createElement('div'); dot.className='mova-bit-dot'+(values[i]?' on':'');
+      cell.appendChild(num); cell.appendChild(dot); c.appendChild(cell);
+    }
+  } else {
+    c.querySelectorAll('.mova-bit-dot').forEach((dot,i) => dot.className='mova-bit-dot'+(values[i]?' on':''));
+  }
+}
+
 function applyMovaUpdate(streams) {
   if (!Array.isArray(streams)) return;
   streams.forEach(s => {
@@ -3542,11 +3721,11 @@ function applyMovaUpdate(streams) {
 
     // ON_CONTROL
     el = document.getElementById('mova-onctrl-' + n);
-    if (el) { el.textContent = onc ? 'YES' : 'NO'; el.className = 'mova-sval '+(onc?'on':'off'); }
+    if (el) { el.textContent = onc ? 'YES' : 'NO'; el.className = 'mova-sval toggle-btn '+(onc?'on':'off'); el.onclick = () => movaSetIO(n,19,onc?0:1); }
 
     // MOVA Enabled
     el = document.getElementById('mova-en-' + n);
-    if (el) { el.textContent = mon ? 'YES' : 'NO'; el.className = 'mova-sval '+(mon?'on':'off'); }
+    if (el) { el.textContent = mon ? 'YES' : 'NO'; el.className = 'mova-sval toggle-btn '+(mon?'on':'off'); el.onclick = () => movaSetIO(n,27,mon?0:1); }
 
     // Error count
     el = document.getElementById('mova-ec-' + n);
@@ -3567,38 +3746,43 @@ function applyMovaUpdate(streams) {
     el = document.getElementById('mova-wt-' + n);   if (el) el.textContent = wt!==undefined ? wt : '—';
     el = document.getElementById('mova-wu-' + n);   if (el) { el.textContent = wu?'YES':'NO'; el.className='mova-sval '+(wu?'warn':''); }
     el = document.getElementById('mova-scan-' + n); if (el) el.textContent = scan;
+    const spd = s.speed||1; el = document.getElementById('mova-speed-'+n); if(el && el.value !== String(spd)) el.value = String(spd);
+    const toff = s.time_offset_hours||0; el = document.getElementById('mova-tod-'+n); if(el && el.value !== String(toff)) el.value = String(toff);
     el = document.getElementById('mova-time-' + n); if (el) el.textContent = s.server_time || '—';
     el = document.getElementById('mova-date-' + n); if (el) el.textContent = s.server_date || '—';
 
-    // MOVA ON button
-    el = document.getElementById('mova-btn-on-' + n);
-    if (el) { el.textContent = mon ? '⚡ MOVA OFF' : '⚡ MOVA ON'; el.className = 'mova-btn admin-only ' + (mon?'mova-off-btn':'mova-on-btn'); }
-
     // Bit grids
-    _movaSetBits('mova-dets-' + n,  ios.detectors||[], 'on');
-    _movaSetBits('mova-confs-' + n, (ios.confirms||[]).slice(0,31), 'on');
+    _movaSetBits('mova-dets-' + n,  buf.kernel_deton||[], 'on');
+    _movaSetBits('mova-confs-' + n, (buf.confirms||[]).slice(0,31), 'on');
+    _movaUpdateSpecial('mova-special-' + n, buf.special_outputs||[]);
 
-    // Forces
-    const forces = ios.forces||[];
+    // Forces + TO (groups of 4, then TO as separate group at end)
+    const forces = buf.forces||[];
     const fg = document.getElementById('mova-forces-' + n);
     if (fg) {
       if (!fg._built || fg._built !== forces.length) {
         fg.innerHTML = '';
+        let grp;
         forces.forEach((v,i) => {
-          fg.innerHTML += `<div class="mova-bit-cell"><div class="mova-bit-num">${i+1}</div><div class="mova-bit-dot" id="mova-f-${n}-${i}"></div></div>`;
+          if (i % 4 === 0) { grp = document.createElement('div'); grp.className='mova-bit-group'; fg.appendChild(grp); }
+          const cell = document.createElement('div'); cell.className='mova-bit-cell';
+          cell.innerHTML = `<div class="mova-bit-num">${String(i+1).padStart(2,'0')}</div><div class="mova-bit-dot" id="mova-f-${n}-${i}"></div>`;
+          grp.appendChild(cell);
         });
+        const toGrp = document.createElement('div'); toGrp.className='mova-bit-group'; toGrp.style.marginLeft='10px';
+        toGrp.innerHTML = `<div class="mova-bit-cell"><div class="mova-bit-num">TO</div><div class="mova-bit-dot" id="mova-to-${n}"></div></div>`;
+        fg.appendChild(toGrp);
         fg._built = forces.length;
       }
-      forces.forEach((v,i) => { const d=document.getElementById(`mova-f-${n}-${i}`); if(d) d.className='mova-bit-dot'+(v?' amber':''); });
+      forces.forEach((v,i) => { const d=document.getElementById(`mova-f-${n}-${i}`); if(d) d.className='mova-bit-dot'+(v?' on':''); });
+      const tod = document.getElementById('mova-to-'+n); if(tod) tod.className='mova-bit-dot'+(buf.to?' amber':'');
     }
 
-    // HI / TO / SYNC / FLT
-    const dout = buf.dout || {};
-    const setBit = (id, on, cls) => { const d=document.getElementById(id); if(d) d.className='mova-bit-dot'+(on?' '+(cls||'on'):''); };
-    setBit('mova-hi-'+n,   ios.hi,   'on');
-    setBit('mova-to-'+n,   ios.to,   'amber');
-    setBit('mova-sync-'+n, ios.sync, 'cyan');
-    setBit('mova-flt-'+n,  ios.mova_fault||ios.det_fault, 'red');
+    // HI / SYNC / FLT
+    const setBit = (id, on, cls) => { const d=document.getElementById(id); if(d) d.className='mova-bit-dot'+(on?' '+cls:''); };
+    setBit('mova-hi-'+n,   ios.hi,                        'hi-on');
+    setBit('mova-sync-'+n, ios.sync,                      'sync-on');
+    setBit('mova-flt-'+n,  buf.mova_fault||buf.det_fault, 'fault-on');
 
     // Faults
     el = document.getElementById('mova-faults-' + n);
@@ -3629,11 +3813,17 @@ function showMova(n, navEl) {
   loadMovaDatasets(n);
 }
 
-function movaCmdOn(n) {
-  const s = (state.mova||[])[n] || {};
-  const io = (s.buffers||{}).io || [];
-  const cur = io.length > 27 ? io[27] : 0;
-  movaCmd(n, 'SET_IO', ['27', cur ? '0' : '1']);
+function movaSetIO(n, index, value) {
+  movaCmd(n, 'SET_IO', [String(index), String(value)]);
+}
+function movaOpenWin(path, name, w, h) {
+  const win = window.open(path, name, `width=${w},height=${h},resizable=yes,scrollbars=yes`);
+  if (win) win.focus();
+}
+function movaPromptForce(n) {
+  const stage = prompt('Force stage (0 to clear):');
+  if (stage === null) return;
+  movaCmd(n, 'FORCE_STAGE', [stage]);
 }
 function movaCmdReset(n) {
   if (!confirm('Reset stream ' + n + '? This clears EC and restarts the kernel.')) return;
@@ -5495,6 +5685,89 @@ def mova_save_io_map(n):
     except Exception as exc:
         return {'ok': False, 'err': str(exc)}
 
+
+@app.route('/mova/stream/<int:n>/messages')
+def mova_stream_messages(n):
+    """SSE stream of kernel decision messages for stream n."""
+    def generate():
+        if _kernel_registry is None:
+            return
+        client = _kernel_registry.get(n)
+        if client is None:
+            return
+        last_seq = 0
+        # Seed with recent history
+        recent = client.all_messages()[-100:]
+        if recent:
+            yield f"data: {json.dumps({'messages': recent})}\n\n"
+            last_seq = recent[-1].get('seq', 0)
+        import select as _select
+        while True:
+            time.sleep(0.5)
+            new = [m for m in client.all_messages() if m.get('seq', 0) > last_seq]
+            if new:
+                yield f"data: {json.dumps({'messages': new})}\n\n"
+                last_seq = new[-1].get('seq', 0)
+            else:
+                yield ": keep-alive\n\n"
+    return Response(stream_with_context(generate()), mimetype='text/event-stream',
+                    headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'})
+
+@app.route('/mova/stream/<int:n>/errors')
+def mova_stream_errors(n):
+    """SSE stream of kernel errors for stream n."""
+    def generate():
+        if _kernel_registry is None:
+            return
+        client = _kernel_registry.get(n)
+        if client is None:
+            return
+        last_seq = 0
+        recent = client.recent_errors()[-100:]
+        if recent:
+            yield f"data: {json.dumps({'errors': recent})}\n\n"
+            last_seq = recent[-1].get('seq', 0)
+        while True:
+            time.sleep(0.5)
+            new = [e for e in client.recent_errors() if e.get('seq', 0) > last_seq]
+            if new:
+                yield f"data: {json.dumps({'errors': new})}\n\n"
+                last_seq = new[-1].get('seq', 0)
+            else:
+                yield ": keep-alive\n\n"
+    return Response(stream_with_context(generate()), mimetype='text/event-stream',
+                    headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'})
+
+@app.route('/mova/messages', methods=['GET'])
+def mova_messages_page():
+    n = int(request.args.get('stream', 0))
+    return Response(_MOVA_MESSAGES_HTML.replace('__STREAM__', str(n)), mimetype='text/html')
+
+@app.route('/mova/errors', methods=['GET'])
+def mova_errors_page():
+    n = int(request.args.get('stream', 0))
+    return Response(_MOVA_ERRORS_HTML.replace('__STREAM__', str(n)), mimetype='text/html')
+
+@app.route('/api/mova/licence', methods=['GET'])
+def mova_licence():
+    try:
+        import sys as _sys
+        _sys.path.insert(0, '/opt/MC_MOVA')
+        from pci_mova.licence.licence import validate, get_hardware_info
+        result = validate()
+        hw     = get_hardware_info()
+        return Response(json.dumps({
+            "valid":       result.valid,
+            "max_streams": result.max_streams,
+            "reason":      result.reason,
+            "owner":       result.data.owner       if result.data else None,
+            "provider":    result.data.provider    if result.data else None,
+            "licence_ref": result.data.licence_ref if result.data else None,
+            "fingerprint": hw.get("fingerprint"),
+            "kernel":      hw.get("kernel_version"),
+        }), mimetype='application/json')
+    except Exception as e:
+        return Response(json.dumps({"valid": False, "reason": str(e)}), mimetype='application/json')
 
 @app.route('/api/mova/datasets', methods=['GET'])
 def mova_datasets():

@@ -141,7 +141,7 @@ class MovaStream:
         self.status.set(MovaStatus.OFF)
         logger.info("Stream %d: stopped", self.stream_id)
 
-    def load_dataset(self, dataset) -> bool:
+    def load_dataset(self, dataset, auto_start: bool = True) -> bool:
         """Load a parsed MovaDataset into the kernel."""
         ok = self.kernel.load_dataset(dataset)
         if ok:
@@ -179,11 +179,12 @@ class MovaStream:
             except Exception as exc:
                 logger.warning("Stream %d: timetable parse failed: %s", self.stream_id, exc)
                 self._timetable = []
-            if self.status.current in (MovaStatus.NO_DATASET, MovaStatus.NOT_STARTED):
-                self.status.set(MovaStatus.INIT)
             # Auto-start the tick loop if not already running
-            if not (self._thread and self._thread.is_alive()):
+            if auto_start and not (self._thread and self._thread.is_alive()):
+                self.status.set(MovaStatus.INIT)
                 self.start()
+            elif not auto_start:
+                self.status.set(MovaStatus.OFF)
         return ok
 
     # ── Tick loop ─────────────────────────────────────────────────────────────

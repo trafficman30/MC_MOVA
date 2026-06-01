@@ -153,7 +153,7 @@ def main():
     # ── IOBus socket server (for external MOVA process) ──────────────────────
     if services.get('iobus_socket', 'disabled') == 'enabled':
         from core.io_bus_server import IOBusServer
-        IOBusServer(io_bus).start()
+        IOBusServer(io).start()
         log.info("IOBus socket server started")
 
     # ── Start FLIR driver ────────────────────────────────────────────────────

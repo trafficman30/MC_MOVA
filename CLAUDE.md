@@ -12,6 +12,21 @@
   - CM5 changes: `cm5/` only
   - MOVA Python changes: `pci_mova/` only
 
+### Lessons from 2026-06-01 (do not repeat)
+
+- **To stop a systemd service permanently: `systemctl disable` THEN `systemctl stop`.** Stop alone does nothing permanent — `Restart=on-failure` brings it straight back.
+- **Before diagnosing a UI bug, read `SimulatedIO.snapshot()` and `CM5IO.snapshot()` side by side.** The JS `ios` object expects the same fields as SimulatedIO. CM5IO snapshot was missing them — that was the root cause. Do not touch JS until you have confirmed what the snapshot actually contains.
+- **`io_bus_server.py` socket is `/tmp/cm5_iobus.sock`** — not `/tmp/pci_iobus.sock`. CLAUDE.md previously had the wrong name.
+- **`IOBusServer` in `main.py` must pass `io` (the IOBus instance), not `io_bus`** — variable is named `io`.
+- **`CM5IO.__init__` parameter is `stream_id`, not `stream_index`.**
+- **Check `ps aux` for duplicate processes before doing anything else** — `cm5.service` (old `/opt/CM5`) and `pci-cm5.service` (new `/opt/MC_MOVA/cm5`) were both running simultaneously. Always kill the old one first.
+- **At the start of every session, run `ps aux | grep -E "mova|pci|python"` and `systemctl list-units | grep -E "mova|cm5"` to confirm no duplicate or zombie services are running before touching anything.**
+- **Only enable kernel streams that are actually needed.** Currently only `pci-mova-kernel@0` is enabled. Do NOT enable streams 1/2/3 unless explicitly asked — `_restore_state()` in kernel_main.py causes them to auto-reload their dataset and start ticking at 10Hz immediately on boot, burning ~47% CPU each.
+- **`_restore_state()` must restore the running state.** State save includes `"running"` flag. Restore passes `auto_start=was_running` to `load_dataset()`. If `auto_start=False` is passed unconditionally, the tick loop never starts — CRB, confirms, SYNC, and XKOP all stop working because `read_inputs()` and `write_outputs()` only run inside the tick loop. **This was broken on 2026-06-01 by passing `auto_start=False` without thinking through the consequence.**
+- **CM5IO must retry `_connect()` on every tick while `_sock` is None.** If the reconnect attempt after a send error fails (e.g. CM5 mid-restart), `_sock` stays None. Without the retry-on-tick fix, the kernel silently returns None every tick forever with no reconnect attempt. Fixed in `_send()`: if `sock is None`, call `_connect()` before giving up.
+- **Detector grid must use `buf.kernel_deton`, not `ios.detectors`.** `kernel_deton` includes SC virtual detectors (Special Conditioning outputs). `ios.detectors` is raw IOBus reads only — SC channels are missing. `/opt/MOVA/index.html` comments this explicitly: "use kernel_deton (includes special conditioning outputs) not detsin". **Broken on 2026-06-01 by not reading the source first.**
+- **MOVA stream UI HTML/JS must be copied from `/opt/MOVA/pci_mova/web/static/index.html` verbatim.** CLAUDE.md states "All HTML/JS UI files — zero changes." Do not invent new class names, new JS functions, or new layouts. Read the source, copy it, adapt only the template variable syntax (`${id}` → `{{n}}`). **Ignored on 2026-06-01, causing hours of rework.**
+
 ---
 
 ## What this is
@@ -648,22 +663,38 @@ On LOAD, generates signal map if not already present.
 
 **Test path:** XKOPio → PTC-1 Sim (use CONNECT_XKOP IPC command to test before CM5 IOBus is live)
 
-### Phase 4 — MOVA UI in CM5 web (NEXT)
+### Phase 4 — MOVA UI in CM5 web ✅ COMPLETE (2026-06-01)
 
-**Decision:** MOVA stream tabs live on the CM5 web tree, not a separate web process.
+8 stream tabs live in CM5 web (`cm5_web.py`). Each stream tab has:
+- Status row: CRB / On Control (toggle) / MOVA Enabled (toggle) / Error Count / Warmup
+- Diagnostic row: PM / CS / DS / NS / WaitT / WU / SCAN / TIME / DATE
+- Bit grids: Detectors (`buf.kernel_deton` — includes SC virtual dets), Confirms, Force Bits + TO, Special Outputs + HI/SYNC/FLT
+- Faults list
+- Controls: Start / Stop / Force / Reset / Speed / TOD / Dataset / Derived / Messages / Errors / History / Analysis / I/O Map / Pop out
+- Messages pop-out: SSE-based, served at `/mova/messages?stream=N` from cm5_web.py
+- Errors pop-out: SSE-based, served at `/mova/errors?stream=N` from cm5_web.py
+- Derived/History/Analysis: **TODO** — routes not yet added to cm5_web.py
 
-One tab per licensed stream in CM5 web (`cm5_web.py`):
-- Stream runtime view: status, stage, diagnostics, kernel messages, derived, TMA
-- Buttons: Start / Stop / MOVA ON / Reset / **I/O MAP**
-- I/O MAP opens signal mapping screen — dataset drives the list, user edits xkop channels
-- Dataset load in CM5 web → sends LOAD via IPC to kernel → kernel configures CM5IO
-- Pop-out button → opens stream in its own window (multi-stream monitoring)
-- No SimulatedIO option in the UI — IO is always real hardware
+**Kernel startup behaviour:**
+- All streams start OFF on boot
+- Streams with saved state (`running=1`) auto-start their tick loop on restart
+- Streams with saved state (`running=0`) or no state file come up OFF (dataset restored but not ticking)
+- `_restore_state()` is in kernel_main.py; state files at `pci_mova/datasets/.stream_state_N.json`
 
-CM5 web connects to kernel IPC push sockets for live state, sends commands via IPC cmd socket.
+**IOBus socket:** `/tmp/cm5_iobus.sock` — enabled via `iobus_socket = enabled` in `cm5/platform.cfg`
+**CM5IO reconnect:** retries on every tick when `_sock is None` (fixed 2026-06-01)
+**Detector display:** always use `buf.kernel_deton` — includes SC virtual detectors
+**Fault display:** `buf.mova_fault` / `buf.det_fault` from `buffers.dout[20/19]`
+**Only `pci-mova-kernel@0` through `@7` enabled** — all 8 streams licensed
 
-### Phase 5 — Route + WS handlers
-One-for-one proxy of all existing endpoints through IPC.
+**Currently running services:**
+- `pci-cm5` — MC_MOVA CM5 web on port 12008
+- `cm5.service` — legacy /opt/CM5 web on port 12007 (kept running)
+- `pci-mova.service` — legacy /opt/MOVA web on port 8080 (kept running)
+- `pci-mova-kernel@0` through `@7` — 8 kernel streams
+
+### Phase 5 — Derived / History / Analysis pop-outs
+Add cm5_web.py routes for `/mova/derived`, `/mova/history`, `/mova/analysis` (SSE-based, same pattern as messages/errors).
 
 ### Phase 6 — Systemd + migration
 New unit files, disable `pci-mova.service` on legacy `/opt/MOVA`.

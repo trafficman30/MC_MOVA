@@ -79,6 +79,15 @@ class CM5IO(AbstractIO):
         # Detector latch state: monotonic timestamp of last rising edge, per index
         self._det_latch: Dict[int, float] = {}
 
+        # Cached last-read/written values for snapshot
+        self._snap_detectors: List[int] = [0] * 64
+        self._snap_confirms:  List[int] = [0] * 31
+        self._snap_forces:    List[int] = [0] * 10
+        self._snap_crb:   bool = False
+        self._snap_hi:    int  = 0
+        self._snap_to:    int  = 0
+        self._snap_sync:  int  = 0
+
         # Socket state
         self._sock:       Optional[socket.socket] = None
         self._sock_lock   = threading.Lock()
@@ -146,7 +155,11 @@ class CM5IO(AbstractIO):
         with self._sock_lock:
             sock = self._sock
         if sock is None:
-            return None
+            self._connect()
+            with self._sock_lock:
+                sock = self._sock
+            if sock is None:
+                return None
         try:
             sock.sendall((cmd + "\n").encode())
             self._tx_count += 1
@@ -201,18 +214,25 @@ class CM5IO(AbstractIO):
             if raw:
                 self._det_latch[det_idx] = now   # rising edge: record time
             held = det_idx in self._det_latch and (now - self._det_latch[det_idx]) < DET_LATCH_SEC
-            buffers.set_detector(det_idx, 1 if (raw or held) else 0)
+            latched = 1 if (raw or held) else 0
+            buffers.set_detector(det_idx, latched)
+            if det_idx < len(self._snap_detectors):
+                self._snap_detectors[det_idx] = latched
 
         # Confirms
         base = len(self._batch_det_idx)
         for pos, conf_idx in enumerate(self._batch_conf_idx):
-            buffers.set_confirm(conf_idx, vals[base + pos])
+            v = vals[base + pos]
+            buffers.set_confirm(conf_idx, v)
+            if conf_idx < len(self._snap_confirms):
+                self._snap_confirms[conf_idx] = v
 
         # CRB
         if self._batch_crb_pos >= 0:
             buffers.crb = bool(vals[self._batch_crb_pos])
         else:
             buffers.crb = True
+        self._snap_crb = buffers.crb
 
     def write_outputs(self, buffers: KernelBuffers) -> None:
         """Write stage forces and control bits back to CM5 IOBus."""
@@ -220,22 +240,36 @@ class CM5IO(AbstractIO):
         for idx, sig in self._force_map.items():
             force_val = buffers.get_force(idx + 1)   # force_map is 0-based
             self._send(f"W {sig} {force_val}")
+            if idx < len(self._snap_forces):
+                self._snap_forces[idx] = force_val
 
         # Control bits
         if self._to_sig:
-            self._send(f"W {self._to_sig} {buffers.dout[DOUT_TO]}")
+            v = buffers.dout[DOUT_TO]; self._send(f"W {self._to_sig} {v}"); self._snap_to = v
         if self._hi_sig:
-            self._send(f"W {self._hi_sig} {buffers.dout[DOUT_HI]}")
+            v = buffers.dout[DOUT_HI]; self._send(f"W {self._hi_sig} {v}"); self._snap_hi = v
         if self._sync_sig:
-            self._send(f"W {self._sync_sig} {buffers.dout[DOUT_SYNC]}")
+            v = buffers.dout[DOUT_SYNC]; self._send(f"W {self._sync_sig} {v}"); self._snap_sync = v
 
     def snapshot(self) -> dict:
         return {
-            "type":      "cm5",
-            "connected": self._connected,
-            "socket":    self._socket_path,
-            "rx":        self._rx_count,
-            "tx":        self._tx_count,
+            "type":         "cm5",
+            "connected":    self._connected,
+            "socket":       self._socket_path,
+            "rx":           self._rx_count,
+            "tx":           self._tx_count,
+            "detectors":    list(self._snap_detectors),
+            "confirms":     list(self._snap_confirms),
+            "forces":       list(self._snap_forces),
+            "crb":          self._snap_crb,
+            "hi":           self._snap_hi,
+            "to":           self._snap_to,
+            "sync":         self._snap_sync,
+            "det_fault":    0,
+            "mova_fault":   0,
+            "det_map":      {str(k): v for k, v in self._det_map.items()},
+            "confirm_map":  {str(k): v for k, v in self._conf_map.items()},
+            "force_map":    {str(k): v for k, v in self._force_map.items()},
         }
 
     def reset_confirms(self, stagon: int) -> None:
